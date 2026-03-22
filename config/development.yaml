@@ -1,0 +1,51 @@
+# 开发环境配置
+# Development Environment Configuration
+
+app:
+  name: "YuNi"
+  version: "1.0.0"
+  debug: true
+  host: "127.0.0.1"
+  port: 8003
+
+database:
+  type: "sqlite"
+  path: "instance/users.db"
+  echo: false
+
+security:
+  jwt_secret: ""  # 开发环境使用随机密钥（每次重启变化）
+  jwt_algorithm: "HS256"
+  jwt_expire_minutes: 60
+  cors_origins:
+    - "*"  # 开发环境允许所有来源
+
+file_upload:
+  max_image_size: 5242880  # 5MB
+  max_model_size: 104857600  # 100MB
+  max_audio_size: 52428800  # 50MB
+  allowed_image_extensions: [".jpg", ".jpeg", ".png", ".gif", ".webp"]
+  allowed_model_extensions: [".glb", ".gltf", ".obj", ".fbx", ".stl", ".ply", ".dae", ".3ds"]
+  allowed_audio_extensions: [".wav", ".mp3", ".m4a", ".ogg", ".flac"]
+
+paths:
+  data_dir: "data"
+  uploads_dir: "data/uploads"
+  tmp_dir: "data/tmp"
+  avatars_dir: "data/avatars"
+  models_dir: "data/models"
+  templates_dir: "frontend/templates"
+  static_dir: "frontend/static"
+
+rag_service:
+  retrieval_model: "bm25"
+  use_chinese_qa: false
+  lazy_load: true
+
+logging:
+  level: "DEBUG"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+
+
+

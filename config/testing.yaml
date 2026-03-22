@@ -1,0 +1,51 @@
+# 测试环境配置
+# Testing Environment Configuration
+
+app:
+  name: "YuNi"
+  version: "1.0.0"
+  debug: true
+  host: "127.0.0.1"
+  port: 8004  # 使用不同端口避免冲突
+
+database:
+  type: "sqlite"
+  path: "instance/test_users.db"  # 使用测试数据库
+  echo: false
+
+security:
+  jwt_secret: "test-secret-key-for-testing-only"
+  jwt_algorithm: "HS256"
+  jwt_expire_minutes: 60
+  cors_origins:
+    - "*"
+
+file_upload:
+  max_image_size: 1048576  # 1MB (测试环境使用较小限制)
+  max_model_size: 10485760  # 10MB
+  max_audio_size: 5242880  # 5MB
+  allowed_image_extensions: [".jpg", ".jpeg", ".png", ".gif", ".webp"]
+  allowed_model_extensions: [".glb", ".gltf", ".obj", ".fbx", ".stl", ".ply", ".dae", ".3ds"]
+  allowed_audio_extensions: [".wav", ".mp3", ".m4a", ".ogg", ".flac"]
+
+paths:
+  data_dir: "tests/fixtures/data"
+  uploads_dir: "tests/fixtures/data/uploads"
+  tmp_dir: "tests/fixtures/data/tmp"
+  avatars_dir: "tests/fixtures/data/avatars"
+  models_dir: "tests/fixtures/data/models"
+  templates_dir: "frontend/templates"
+  static_dir: "frontend/static"
+
+rag_service:
+  retrieval_model: "bm25"
+  use_chinese_qa: false
+  lazy_load: false  # 测试环境立即加载
+
+logging:
+  level: "DEBUG"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+
+
+

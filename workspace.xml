@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="9efb3e92-84c6-4e89-8a66-9958f05b71e8" name="更改" comment="">
+      <change afterPath="$PROJECT_DIR$/backend/rag_service/traditional_retrieval.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/OPTIMIZATION_SUMMARY.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/PROJECT_MAP.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/app/api/v1/profile.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/api/v1/profile.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/app/services/asr_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/services/asr_service.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/database.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/database.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/static/page-transition.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/static/page-transition.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/static/styles.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/static/styles.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/templates/MainInterface.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/templates/MainInterface.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/templates/app/account_cancel.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/templates/app/account_cancel.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/templates/app/account_layout.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/templates/app/account_layout.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/templates/app/account_newsletter.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/templates/app/account_newsletter.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/templates/app/account_overview.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/templates/app/account_overview.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/templates/app/account_password.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/templates/app/account_password.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/templates/app/account_profiles.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/templates/app/account_profiles.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/templates/app/account_submissions.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/templates/app/account_submissions.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/templates/app/landing.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/templates/app/landing.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/templates/login.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/templates/login.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/templates/register.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/templates/register.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/templates/shared/header.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/templates/shared/header.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/templates/whisper.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/templates/whisper.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="ROOT_SYNC" value="DONT_SYNC" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 1
+}</component>
+  <component name="ProjectId" id="30zvHAoEwLQc4DJ6KiHUDJvQPqo" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;Python.app_html.executor&quot;: &quot;Run&quot;,
+    &quot;Python.test1.executor&quot;: &quot;Run&quot;,
+    &quot;Python.web_demo.executor&quot;: &quot;Run&quot;,
+    &quot;Python.whisper.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/Projects/YuNi&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-js-predefined-d6986cc7102b-9b0f141eb926-JavaScript-PY-253.31033.139" />
+        <option value="bundled-python-sdk-2653e85de345-6d6dccd035ac-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-253.31033.139" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="默认任务">
+      <changelist id="9efb3e92-84c6-4e89-8a66-9958f05b71e8" name="更改" comment="" />
+      <created>1754643125791</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1754643125791</updated>
+      <workItem from="1754643127266" duration="1213000" />
+      <workItem from="1754646163150" duration="830000" />
+      <workItem from="1754647035494" duration="9000" />
+      <workItem from="1755847754492" duration="376000" />
+      <workItem from="1755848320436" duration="14000" />
+      <workItem from="1755848364273" duration="86000" />
+      <workItem from="1755848734199" duration="218000" />
+      <workItem from="1755849065397" duration="600000" />
+      <workItem from="1755855555826" duration="6722000" />
+      <workItem from="1756984570477" duration="1944000" />
+      <workItem from="1757660050526" duration="2830000" />
+      <workItem from="1757746887467" duration="180000" />
+      <workItem from="1758779867552" duration="784000" />
+      <workItem from="1758867237478" duration="131000" />
+      <workItem from="1758881209315" duration="829000" />
+      <workItem from="1758883742730" duration="310000" />
+      <workItem from="1760164188792" duration="2428000" />
+      <workItem from="1760179436205" duration="938000" />
+      <workItem from="1760181800558" duration="7000" />
+      <workItem from="1760233183098" duration="22000" />
+      <workItem from="1762002139171" duration="27000" />
+      <workItem from="1762002167242" duration="133000" />
+      <workItem from="1762004349831" duration="85000" />
+      <workItem from="1762073239625" duration="8000" />
+      <workItem from="1762345909799" duration="17000" />
+      <workItem from="1762345956858" duration="118000" />
+      <workItem from="1762354881138" duration="993000" />
+      <workItem from="1762356768862" duration="61000" />
+      <workItem from="1762510505186" duration="166000" />
+      <workItem from="1762515254585" duration="744000" />
+      <workItem from="1762588221341" duration="249000" />
+      <workItem from="1762855272338" duration="1996000" />
+      <workItem from="1762930551422" duration="137000" />
+      <workItem from="1762932054077" duration="618000" />
+      <workItem from="1762932942246" duration="1152000" />
+      <workItem from="1762934126769" duration="1671000" />
+      <workItem from="1762935832554" duration="218000" />
+      <workItem from="1762936152338" duration="315000" />
+      <workItem from="1762945505977" duration="692000" />
+      <workItem from="1763280208518" duration="40000" />
+      <workItem from="1764142879436" duration="705000" />
+      <workItem from="1764146243246" duration="34000" />
+      <workItem from="1764601162046" duration="1473000" />
+      <workItem from="1764685277288" duration="73000" />
+      <workItem from="1764685471530" duration="18000" />
+      <workItem from="1764685539821" duration="1077000" />
+      <workItem from="1769939619990" duration="9000" />
+      <workItem from="1773665963922" duration="3172000" />
+      <workItem from="1773734674616" duration="457000" />
+      <workItem from="1773736471128" duration="25000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="UnknownFeatures">
+    <option featureType="dependencySupport" implementationName="javascript:npm:stylus" />
+    <option featureType="dependencySupport" implementationName="javascript:npm:vite" />
+    <option featureType="dependencySupport" implementationName="javascript:npm:pug" />
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/YuNi$whisper.coverage" NAME="whisper 覆盖结果" MODIFIED="1754644335419" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/test1_py$test1.coverage" NAME="test1 覆盖结果" MODIFIED="1757662133187" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/test1_py$app_html.coverage" NAME="app_html 覆盖结果" MODIFIED="1760166166588" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/whisper_py$whisper.coverage" NAME="whisper 覆盖结果" MODIFIED="1754646910174" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/web_demo_py$web_demo.coverage" NAME="web_demo 覆盖结果" MODIFIED="1755848918509" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+  </component>
+</project>
