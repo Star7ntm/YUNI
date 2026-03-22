@@ -1,0 +1,32 @@
+D:\Projects\YuNi\backend\app\core\config.py:17: UserWarning: [WARNING]  警告: 未设置 YUNI_JWT_SECRET 环境变量，使用随机密钥（重启后token会失效）
+生产环境请设置: export YUNI_JWT_SECRET='your-secret-key-here'
+  warnings.warn(
+INFO:     Started server process [40172]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8003 (Press CTRL+C to quit)
+Whisper库加载成功
+[OK] mental_health_conversation 表已创建或已存在
+[OK] 数据库表已初始化
+[OK] v1/auth 路由已加载
+[OK] v1/asr 路由已加载
+[OK] v1/profile 路由已加载
+[OK] v1/models 路由已加载
+[主应用] UPLOADS_DIR: D:\Projects\YuNi\backend\data\uploads
+[主应用] UPLOADS_DIR 是否存在: True
+[主应用] 已挂载 /uploads 静态文件服务
+[主应用] AVATARS_DIR: D:\Projects\YuNi\backend\data\avatars
+[主应用] AVATARS_DIR 是否存在: True
+[主应用] 已挂载 /avatars 静态文件服务
+[主应用] MODELS_DIR: D:\Projects\YuNi\backend\data\models
+[主应用] MODELS_DIR 是否存在: True
+[主应用] 已注册 /models/{uid}/{filename} 路由，目录: D:\Projects\YuNi\backend\data\models
+[OK] 音色目录: D:\Projects\YuNi\backend\data\user_voices
+[BOOT] TTS bootstrap failed: 'gbk' codec can't encode character '\u26a0' in position 0: illegal multibyte sequence
+启动Whisper语音识别服务...
+访问地址: http://127.0.0.1:8003
+可用模型:
+  [OK] Whisper Large V3 (large-v3)
+  [OK] Whisper Large V3 Turbo (large-v3-turbo)
+项目根目录: D:\Projects\YuNi
+INFO:     127.0.0.1:22903 - "POST /api/tts HTTP/1.1" 400 Bad Request

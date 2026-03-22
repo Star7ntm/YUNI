@@ -1,0 +1,30 @@
+# 开发环境依赖
+# Development Dependencies
+
+# 包含生产依赖
+-r requirements-locked.txt
+
+# ==================== 开发工具 ====================
+# 代码质量
+pytest==8.3.3
+pytest-cov==6.0.0
+pytest-asyncio==0.24.0
+black==24.10.0
+flake8==7.1.1
+mypy==1.11.2
+
+# 调试工具
+ipython==8.29.0
+ipdb==0.13.13
+
+# 文档生成
+sphinx==8.1.3
+sphinx-rtd-theme==3.0.2
+
+# 性能分析
+memory-profiler==0.61.0
+line-profiler==4.1.3
+
+
+
+
