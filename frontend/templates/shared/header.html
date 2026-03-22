@@ -1,0 +1,617 @@
+<div class="header-nav" id="headerNav" style="position:sticky; top:0; z-index:40; margin:0; background:rgba(255,255,255,0.95); backdrop-filter:blur(20px); border-bottom:1px solid rgba(0,0,0,0.08); display:flex; align-items:center; justify-content:space-between; padding:16px 40px; transition:transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+	<!-- 左侧导航 -->
+	<nav class="header-nav-left" style="display:flex; align-items:center; gap:32px;">
+		<a href="/" class="nav-link" style="font-size:14px; font-weight:600; color:#0a0a0a; text-decoration:none; transition:color 0.3s; font-family:'Inter', sans-serif; position:relative;">功能</a>
+	</nav>
+	
+	<!-- 中间 Logo -->
+	<div class="header-logo" style="position:absolute; left:50%; transform:translateX(-50%); display:flex; align-items:center; gap:12px; min-width:120px; height:48px; will-change:transform;">
+		<a href="/" style="display:flex; align-items:center; gap:12px; text-decoration:none; min-width:120px; height:100%;">
+			<svg class="logo" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+				<rect width="32" height="32" rx="8" fill="#0a0a0a"/>
+				<path d="M8 12L16 8L24 12V20L16 24L8 20V12Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+				<circle cx="16" cy="16" r="3" fill="white"/>
+			</svg>
+			<span style="font-size:18px; font-weight:800; color:#000000; font-family:'Inter', sans-serif; letter-spacing:-0.02em; white-space:nowrap; line-height:1; display:inline-block;">YuNi</span>
+		</a>
+	</div>
+	
+	<!-- 右侧操作按钮 -->
+	<nav class="header-nav-right" style="display:flex; align-items:center; gap:12px; min-width:0; flex-shrink:0;">
+		<button id="watchDemoBtn" class="nav-btn-secondary" style="font-size:14px; font-weight:600; padding:10px 20px; background:transparent; border:1.5px solid rgba(0,0,0,0.15); color:#0a0a0a; border-radius:8px; cursor:pointer; transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1); font-family:'Inter', sans-serif; white-space:nowrap;">观看演示</button>
+		<a href="/register" id="navRegister" class="nav-btn-secondary" style="font-size:14px; font-weight:600; padding:10px 20px; background:transparent; border:1.5px solid rgba(0,0,0,0.15); color:#0a0a0a; border-radius:8px; text-decoration:none; transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1); font-family:'Inter', sans-serif;">注册</a>
+		<a href="/login" id="navAuth" class="nav-btn-primary" style="font-size:14px; font-weight:600; padding:10px 20px; background:#0a0a0a; border:none; color:#ffffff; border-radius:8px; text-decoration:none; transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1); font-family:'Inter', sans-serif; box-shadow:0 2px 8px rgba(0,0,0,0.15);">登录</a>
+		<!-- 用户下拉菜单 -->
+		<div id="userDropdown" class="user-dropdown" style="display:none; position:relative;">
+			<button id="userDropdownBtn" class="user-dropdown-btn" style="display:flex; align-items:center; gap:8px; padding:8px 16px; background:#0a0a0a; border:none; color:#ffffff; border-radius:8px; cursor:pointer; font-size:14px; font-weight:600; font-family:'Inter', sans-serif; transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+				<div class="user-dropdown-avatar" id="headerUserAvatar" style="width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; overflow:hidden;">
+					<svg id="headerAvatarPlaceholder" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:block;">
+						<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+						<circle cx="12" cy="7" r="4"></circle>
+					</svg>
+					<img id="headerAvatarImage" style="display:none; width:100%; height:100%; object-fit:cover;" />
+				</div>
+				<span id="headerUserName">用户</span>
+				<svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="transition:transform 0.3s;">
+					<path d="M2 4L6 8L10 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+				</svg>
+			</button>
+			<div id="userDropdownMenu" class="user-dropdown-menu" style="display:none; position:absolute; top:calc(100% + 8px); right:0; background:#ffffff; border:1px solid #E5E5E5; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.08); min-width:200px; padding:8px; z-index:1000; transform-origin:top right; opacity:0; transform:scale(0.95) translateY(-8px); transition:opacity 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);">
+				<a href="/account" class="dropdown-item" style="display:flex; align-items:center; gap:12px; padding:10px 16px; color:#333; text-decoration:none; border-radius:8px; transition:all 0.2s; font-size:14px; font-weight:500; font-family:'Inter', sans-serif;">
+					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.2s;">
+						<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+						<circle cx="12" cy="7" r="4"></circle>
+					</svg>
+					<span>账户设置</span>
+				</a>
+				<a href="/main" class="dropdown-item" style="display:flex; align-items:center; gap:12px; padding:10px 16px; color:#333; text-decoration:none; border-radius:8px; transition:all 0.2s; font-size:14px; font-weight:500; font-family:'Inter', sans-serif;">
+					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.2s;">
+						<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+						<polyline points="9 22 9 12 15 12 15 22"></polyline>
+					</svg>
+					<span>主页面</span>
+				</a>
+				<button id="dropdownLogout" class="dropdown-item dropdown-item-logout" type="button" style="width:100%; display:flex; align-items:center; gap:12px; padding:10px 16px; background:transparent; border:none; border-top:1px solid #eee; color:#333; text-align:left; border-radius:0 0 8px 8px; cursor:pointer; transition:all 0.2s; font-size:14px; font-weight:500; font-family:'Inter', sans-serif; margin-top:4px;">
+					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.2s;">
+						<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+						<polyline points="16 17 21 12 16 7"></polyline>
+						<line x1="21" y1="12" x2="9" y2="12"></line>
+					</svg>
+					<span>退出登录</span>
+				</button>
+			</div>
+		</div>
+	</nav>
+</div>
+
+<!-- 视频播放器全屏覆盖层 -->
+<div id="videoPlayerOverlay">
+	<div id="videoPlayerContainer">
+		<button id="videoPlayerClose" type="button" aria-label="关闭视频">×</button>
+		<div id="videoPlayerLoading">加载中...</div>
+		<div id="videoPlayerError">
+			<div style="font-size:24px; margin-bottom:12px;">⚠️</div>
+			<div>视频加载失败</div>
+			<div style="font-size:14px; margin-top:8px; opacity:0.8;">请检查视频文件是否存在</div>
+		</div>
+		<video id="videoPlayer" controls preload="metadata">
+			<source id="videoPlayerSource" src="" type="video/mp4">
+			您的浏览器不支持视频播放
+		</video>
+	</div>
+</div>
+
+<style>
+	/* 导航链接悬停效果 */
+	.nav-link{
+		position:relative;
+	}
+	.nav-link::after{
+		content:'';
+		position:absolute;
+		bottom:-4px;
+		left:0;
+		width:0;
+		height:2px;
+		background:#0a0a0a;
+		transition:width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	}
+	.nav-link:hover::after{
+		width:100%;
+	}
+	.nav-link:hover{
+		color:#000000;
+	}
+	
+	/* 按钮悬停效果 */
+	.nav-btn-secondary:hover{
+		background:rgba(0,0,0,0.05);
+		border-color:rgba(0,0,0,0.25);
+		transform:translateY(-1px);
+	}
+	
+	.nav-btn-primary:hover{
+		background:#1a1a1a;
+		transform:translateY(-1px);
+		box-shadow:0 4px 12px rgba(0,0,0,0.2);
+	}
+	
+	/* 用户下拉菜单样式 */
+	.user-dropdown-btn:hover{
+		background:#1a1a1a;
+		transform:translateY(-1px);
+		box-shadow:0 4px 12px rgba(0,0,0,0.2);
+	}
+	
+	.user-dropdown-btn.active svg{
+		transform:rotate(180deg);
+	}
+	
+	.dropdown-item{
+		position:relative;
+	}
+	
+	.dropdown-item:hover{
+		background:#F5F5F5;
+	}
+	
+	.dropdown-item:hover svg{
+		transform:translateX(2px);
+	}
+	
+	.dropdown-item:active{
+		background:#EEEEEE;
+	}
+	
+	/* 退出登录按钮特殊样式 */
+	.dropdown-item-logout{
+		border-top:1px solid #eee !important;
+	}
+	
+	.dropdown-item-logout:hover{
+		background:#FEF2F2 !important;
+	}
+	
+	.dropdown-item-logout:hover svg,
+	.dropdown-item-logout:hover span{
+		color:#ef4444 !important;
+		stroke:#ef4444 !important;
+	}
+	
+	/* 下拉菜单出现动画 */
+	.user-dropdown-menu.show{
+		opacity:1 !important;
+		transform:scale(1) translateY(0) !important;
+	}
+	
+	/* 视频播放器全屏样式 */
+	#videoPlayerOverlay{
+		display:none;
+		position:fixed;
+		top:0;
+		left:0;
+		width:100%;
+		height:100%;
+		background:rgba(0,0,0,0.95);
+		z-index:9999;
+		align-items:center;
+		justify-content:center;
+	}
+	
+	#videoPlayerOverlay.active{
+		display:flex;
+	}
+	
+	#videoPlayerContainer{
+		position:relative;
+		width:90%;
+		height:90%;
+		max-width:1920px;
+		max-height:1080px;
+		display:flex;
+		align-items:center;
+		justify-content:center;
+	}
+	
+	#videoPlayer{
+		width:100%;
+		height:100%;
+		object-fit:contain;
+		border-radius:8px;
+		background:#000000;
+	}
+	
+	#videoPlayerLoading{
+		position:absolute;
+		top:50%;
+		left:50%;
+		transform:translate(-50%, -50%);
+		color:#ffffff;
+		font-size:18px;
+		font-family:'Inter', sans-serif;
+		display:none;
+	}
+	
+	#videoPlayerOverlay.loading #videoPlayerLoading{
+		display:block;
+	}
+	
+	#videoPlayerError{
+		position:absolute;
+		top:50%;
+		left:50%;
+		transform:translate(-50%, -50%);
+		color:#ffffff;
+		font-size:16px;
+		font-family:'Inter', sans-serif;
+		text-align:center;
+		display:none;
+		padding:20px;
+		background:rgba(255,255,255,0.1);
+		border-radius:12px;
+		backdrop-filter:blur(10px);
+	}
+	
+	#videoPlayerOverlay.error #videoPlayerError{
+		display:block;
+	}
+	
+	#videoPlayerClose{
+		position:absolute;
+		top:20px;
+		right:20px;
+		width:40px;
+		height:40px;
+		background:rgba(255,255,255,0.2);
+		border:none;
+		border-radius:50%;
+		color:#ffffff;
+		font-size:24px;
+		cursor:pointer;
+		display:flex;
+		align-items:center;
+		justify-content:center;
+		transition:all 0.3s;
+		z-index:10000;
+	}
+	
+	#videoPlayerClose:hover{
+		background:rgba(255,255,255,0.3);
+		transform:scale(1.1);
+	}
+	
+	/* 顶栏收回效果 */
+	.header-nav.hidden{
+		transform:translateY(-100%);
+		opacity:0;
+		pointer-events:none;
+	}
+	
+	.header-nav.visible{
+		transform:translateY(0);
+		opacity:1;
+		pointer-events:auto;
+	}
+	
+	/* 响应式设计 */
+	@media (max-width: 768px){
+		.header-nav{
+			padding:12px 20px;
+		}
+		.header-nav-left{
+			gap:16px;
+		}
+		.header-nav-left .nav-link{
+			font-size:13px;
+		}
+		.header-logo{
+			position:static;
+			transform:none;
+		}
+		.header-logo span{
+			display:none;
+		}
+		.nav-btn-secondary,
+		.nav-btn-primary{
+			padding:8px 16px;
+			font-size:13px;
+		}
+		.user-dropdown-btn{
+			padding:6px 12px;
+			font-size:13px;
+		}
+		.user-dropdown-btn span:not(.user-dropdown-avatar){
+			display:none;
+		}
+		.user-dropdown-menu{
+			right:0;
+			left:auto;
+			min-width:180px;
+		}
+		#videoPlayerContainer{
+			width:95%;
+			height:95%;
+		}
+		#videoPlayerClose{
+			top:10px;
+			right:10px;
+			width:36px;
+			height:36px;
+			font-size:20px;
+		}
+	}
+</style>
+<script>
+(function(){
+	// auth state
+	try{
+		const u = JSON.parse(localStorage.getItem('yuni_user')||'null');
+		const token = localStorage.getItem('yuni_token');
+		const navAuth = document.getElementById('navAuth');
+		const navRegister = document.getElementById('navRegister');
+		const userDropdown = document.getElementById('userDropdown');
+		const userDropdownBtn = document.getElementById('userDropdownBtn');
+		const userDropdownMenu = document.getElementById('userDropdownMenu');
+		const headerUserName = document.getElementById('headerUserName');
+		const headerAvatarPlaceholder = document.getElementById('headerAvatarPlaceholder');
+		const headerAvatarImage = document.getElementById('headerAvatarImage');
+		const dropdownLogout = document.getElementById('dropdownLogout');
+		
+		// 观看演示按钮 - 视频播放功能
+		const watchDemoBtn = document.getElementById('watchDemoBtn');
+		const videoOverlay = document.getElementById('videoPlayerOverlay');
+		const videoPlayer = document.getElementById('videoPlayer');
+		const videoPlayerClose = document.getElementById('videoPlayerClose');
+		
+		if(watchDemoBtn && videoOverlay && videoPlayer){
+			const videoPlayerSource = document.getElementById('videoPlayerSource');
+			const videoPlayerLoading = document.getElementById('videoPlayerLoading');
+			const videoPlayerError = document.getElementById('videoPlayerError');
+			
+			// 关闭视频播放器的函数
+			function closeVideoPlayer(){
+				videoOverlay.classList.remove('active', 'loading', 'error');
+				videoPlayer.pause();
+				videoPlayer.currentTime = 0;
+				videoPlayer.src = '';
+				if(videoPlayerSource) videoPlayerSource.src = '';
+			}
+			
+			// 点击观看演示按钮
+			watchDemoBtn.addEventListener('click', function(){
+				// TODO: 将视频路径替换为实际的演示视频路径
+				// 例如：const videoPath = '/static/demo-video.mp4';
+				const videoPath = '/static/demo-video.mp4'; // 请替换为实际视频路径
+				
+				// 显示加载状态
+				videoOverlay.classList.remove('error');
+				videoOverlay.classList.add('active', 'loading');
+				
+				// 设置视频源
+				if(videoPlayerSource){
+					videoPlayerSource.src = videoPath;
+					videoPlayer.load();
+				}else{
+					videoPlayer.src = videoPath;
+				}
+				
+				// 监听视频加载事件
+				videoPlayer.addEventListener('loadeddata', function(){
+					videoOverlay.classList.remove('loading');
+					videoPlayer.play().catch(function(error) {
+						console.log('视频播放失败:', error);
+						videoOverlay.classList.remove('loading');
+						videoOverlay.classList.add('error');
+					});
+				}, { once: true });
+				
+				// 监听视频加载错误
+				videoPlayer.addEventListener('error', function(){
+					console.log('视频加载失败');
+					videoOverlay.classList.remove('loading');
+					videoOverlay.classList.add('error');
+					// 3秒后自动关闭错误提示
+					setTimeout(function(){
+						if(videoOverlay.classList.contains('error')){
+							closeVideoPlayer();
+						}
+					}, 3000);
+				}, { once: true });
+			});
+			
+			// 视频播放结束后自动关闭
+			videoPlayer.addEventListener('ended', function(){
+				closeVideoPlayer();
+			});
+			
+			// 点击关闭按钮
+			if(videoPlayerClose){
+				videoPlayerClose.addEventListener('click', function(){
+					closeVideoPlayer();
+				});
+			}
+			
+			// 点击背景关闭（点击overlay但不点击视频容器）
+			videoOverlay.addEventListener('click', function(e){
+				if(e.target === videoOverlay){
+					closeVideoPlayer();
+				}
+			});
+			
+			// ESC键关闭
+			document.addEventListener('keydown', function(e){
+				if(e.key === 'Escape' && videoOverlay.classList.contains('active')){
+					closeVideoPlayer();
+				}
+			});
+		}
+		
+		if(u && (u.username||u.name) && token){
+			// 已登录：隐藏登录和注册按钮，显示用户下拉菜单
+			// 观看演示按钮始终显示
+			if(navAuth) navAuth.style.display = 'none';
+			if(navRegister) navRegister.style.display = 'none';
+			if(userDropdown) userDropdown.style.display = 'block';
+			if(watchDemoBtn) watchDemoBtn.style.display = 'inline-block';
+			
+			// 设置用户名
+			if(headerUserName){
+				headerUserName.textContent = u.username || u.name || '用户';
+			}
+			
+			// 设置头像
+			if(u.avatar && headerAvatarImage){
+				headerAvatarImage.src = u.avatar;
+				headerAvatarImage.style.display = 'block';
+				if(headerAvatarPlaceholder) headerAvatarPlaceholder.style.display = 'none';
+				// 添加错误处理：图片加载失败时显示占位符
+				headerAvatarImage.onerror = function() {
+					this.style.display = 'none';
+					if(headerAvatarPlaceholder) headerAvatarPlaceholder.style.display = 'block';
+				};
+			}else if(headerAvatarPlaceholder){
+				headerAvatarPlaceholder.style.display = 'block';
+				if(headerAvatarImage) headerAvatarImage.style.display = 'none';
+			}
+			
+			// 下拉菜单切换
+			if(userDropdownBtn && userDropdownMenu){
+				userDropdownBtn.addEventListener('click', function(e){
+					e.stopPropagation();
+					const isVisible = userDropdownMenu.classList.contains('show');
+					if(isVisible){
+						userDropdownMenu.classList.remove('show');
+						setTimeout(function(){
+							if(!userDropdownMenu.classList.contains('show')){
+								userDropdownMenu.style.display = 'none';
+							}
+						}, 200);
+					}else{
+						userDropdownMenu.style.display = 'block';
+						// 触发重排以触发动画
+						userDropdownMenu.offsetHeight;
+						setTimeout(function(){
+							userDropdownMenu.classList.add('show');
+						}, 10);
+					}
+					userDropdownBtn.classList.toggle('active', !isVisible);
+				});
+				
+				// 点击外部关闭菜单
+				document.addEventListener('click', function(e){
+					if(!userDropdown.contains(e.target)){
+						userDropdownMenu.style.display = 'none';
+						userDropdownMenu.classList.remove('show');
+						userDropdownBtn.classList.remove('active');
+					}
+				});
+			}
+			
+			// 退出登录
+			if(dropdownLogout){
+				dropdownLogout.addEventListener('click', function(){
+					localStorage.removeItem('yuni_user');
+					localStorage.removeItem('yuni_token');
+					window.location.href = '/login';
+				});
+			}
+		}else{
+			// 未登录：显示登录和注册按钮，隐藏用户下拉菜单
+			if(navAuth) navAuth.style.display = 'inline-block';
+			if(navRegister) navRegister.style.display = 'inline-block';
+			if(userDropdown) userDropdown.style.display = 'none';
+		}
+	}catch(e){
+		console.error('Header auth check failed:', e);
+		// 出错时显示登录和注册按钮
+		const navAuth = document.getElementById('navAuth');
+		const navRegister = document.getElementById('navRegister');
+		const userDropdown = document.getElementById('userDropdown');
+		if(navAuth) navAuth.style.display = 'inline-block';
+		if(navRegister) navRegister.style.display = 'inline-block';
+		if(userDropdown) userDropdown.style.display = 'none';
+	}
+	
+	// ========== 顶栏收回功能 ==========
+	// 配置参数 - 可以在这里微调
+	const HEADER_CONFIG = {
+		scrollThreshold: 50,           // 滚动阈值（像素），页面顶部多少像素内不隐藏顶栏
+		hideDelay: 150,               // 隐藏延迟（毫秒），向下滚动后多久隐藏（建议：100-300）
+		showDelay: 0,                 // 显示延迟（毫秒），向上滚动后多久显示（建议：0-100）
+		scrollSpeedThreshold: 10,     // 滚动速度阈值，快速滚动时立即响应（建议：5-20）
+		enableOnMobile: true          // 是否在移动端启用
+	};
+	
+	const headerNav = document.getElementById('headerNav');
+	if(headerNav){
+		let lastScrollY = window.scrollY;
+		let scrollDirection = 0; // 1 = 向下, -1 = 向上
+		let hideTimeout = null;
+		let showTimeout = null;
+		
+		// 检查是否在移动端
+		const isMobile = window.innerWidth <= 768;
+		if(!HEADER_CONFIG.enableOnMobile && isMobile){
+			// 移动端禁用，直接返回
+			return;
+		}
+		
+		function updateHeader(){
+			const currentScrollY = window.scrollY;
+			const scrollDelta = currentScrollY - lastScrollY;
+			const scrollSpeed = Math.abs(scrollDelta);
+			
+			// 清除之前的定时器
+			if(hideTimeout) clearTimeout(hideTimeout);
+			if(showTimeout) clearTimeout(showTimeout);
+			
+			// 在页面顶部时始终显示（修复：使用合理的阈值）
+			if(currentScrollY <= HEADER_CONFIG.scrollThreshold){
+				headerNav.classList.remove('hidden');
+				headerNav.classList.add('visible');
+				lastScrollY = currentScrollY;
+				return;
+			}
+			
+			// 快速滚动时立即响应（修复：先检查快速滚动，避免被顶部判断拦截）
+			if(scrollSpeed > HEADER_CONFIG.scrollSpeedThreshold){
+				if(scrollDelta > 0){
+					// 向下滚动 - 立即隐藏
+					headerNav.classList.remove('visible');
+					headerNav.classList.add('hidden');
+				}else{
+					// 向上滚动 - 立即显示
+					headerNav.classList.remove('hidden');
+					headerNav.classList.add('visible');
+				}
+				lastScrollY = currentScrollY;
+				return;
+			}
+			
+			// 正常滚动速度 - 使用延迟
+			if(scrollDelta > 0){
+				// 向下滚动 - 延迟隐藏
+				scrollDirection = 1;
+				hideTimeout = setTimeout(() => {
+					headerNav.classList.remove('visible');
+					headerNav.classList.add('hidden');
+				}, HEADER_CONFIG.hideDelay);
+			}else if(scrollDelta < 0){
+				// 向上滚动 - 延迟显示（通常立即显示）
+				scrollDirection = -1;
+				showTimeout = setTimeout(() => {
+					headerNav.classList.remove('hidden');
+					headerNav.classList.add('visible');
+				}, HEADER_CONFIG.showDelay);
+			}
+			
+			lastScrollY = currentScrollY;
+		}
+		
+		// 使用节流优化性能
+		let ticking = false;
+		function onScroll(){
+			if(!ticking){
+				window.requestAnimationFrame(() => {
+					updateHeader();
+					ticking = false;
+				});
+				ticking = true;
+			}
+		}
+		
+		// 初始化：页面顶部时显示
+		headerNav.classList.add('visible');
+		
+		// 监听滚动事件
+		window.addEventListener('scroll', onScroll, { passive: true });
+		
+		// 鼠标移入顶栏区域时显示（即使正在滚动）
+		headerNav.addEventListener('mouseenter', () => {
+			if(hideTimeout) clearTimeout(hideTimeout);
+			headerNav.classList.remove('hidden');
+			headerNav.classList.add('visible');
+		});
+	}
+})();
+</script>

@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="/static/styles.css">
+	<!-- Bootstrap Icons - 带备用方案 -->
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" 
+		  onerror="this.onerror=null; this.href='https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css'; this.onerror=function(){console.warn('Bootstrap Icons failed to load from all CDNs');}">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Serif+4:wght@700;800&display=swap" rel="stylesheet">
+	<script src="/static/smooth-scroll.js" defer></script>
+	<script src="/static/page-transition.js" defer></script>
+	<!-- 页面转场覆盖层 - 立即创建，确保首次加载时可见 -->
+	<script>
+		(function() {
+			const isFirstLoad = !sessionStorage.getItem('page-transition-initialized');
+			const isFromTransition = sessionStorage.getItem('page-transition-pending') === 'true';
+			if (isFirstLoad || isFromTransition) {
+				const overlay = document.createElement('div');
+				overlay.id = 'page-transition-overlay-inline';
+				overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#ffffff 0%,#f8f9fa 50%,#f1f3f5 100%);z-index:99999;opacity:1;pointer-events:auto;transition:transform 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94);will-change:transform;backface-visibility:hidden;-webkit-backface-visibility:hidden;transform:translateY(0) translateZ(0);';
+				document.documentElement.insertBefore(overlay, document.body || document.documentElement.firstChild);
+			}
+		})();
+	</script>
+	<title>登录 - YuNi</title>
+    <style>
+		* { box-sizing: border-box; margin: 0; padding: 0; }
+		
+		body.aw{
+			background: #ffffff; /* 白色背景 */
+			min-height: 100vh;
+			position: relative;
+			overflow-x: hidden;
+		}
+		
+		/* 波浪线条背景容器 */
+		.auth-background{
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			z-index: 0;
+			overflow: hidden;
+			background: #ffffff;
+		}
+		
+		/* SVG 波浪线条容器 */
+		a-waves{
+			--x: -0.5rem;
+			--y: 50%;
+			position:absolute;
+			top:0;
+			left:0;
+			margin:0;
+			padding:0;
+			width:100%;
+			height:100%;
+			overflow:hidden;
+			pointer-events:auto;
+		}
+		
+		a-waves svg{
+			display:block;
+			width:100%;
+			height:100%;
+		}
+		
+		a-waves svg path{
+			fill:none;
+			stroke:rgba(10, 10, 10, 0.15); /* 深色细线条 */
+			stroke-width:1px;
+		}
+		
+		.auth-shell{
+			min-height: 100vh;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			position: relative;
+			z-index: 2;
+			padding: 24px;
+		}
+		
+		.auth-card{
+			width: 100%;
+			max-width: 560px;
+		}
+		
+		.auth-card .card{
+			padding: 48px;
+			background: #ffffff;
+			border: 1px solid rgba(0,0,0,0.1);
+			border-radius: 24px;
+			box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+			animation: fadeInUp 0.8s ease-out;
+		}
+		
+		@keyframes fadeInUp{
+			from{
+				opacity: 0;
+				transform: translateY(40px);
+			}
+			to{
+				opacity: 1;
+				transform: translateY(0);
+			}
+		}
+		
+		/* 覆盖全局样式中的蓝紫色渐变 */
+		.auth-card .hero-title,
+		.aw .auth-card .hero-title,
+		.landing-page .auth-card .hero-title,
+		h1.hero-title{ 
+			font-size: 36px;
+			font-weight: 800;
+			letter-spacing: -0.03em;
+			/* 黑色到灰色渐变效果 */
+			background:linear-gradient(135deg, #000000 0%, #1a1a1a 30%, #4a4a4a 70%, #666666 100%) !important;
+			-webkit-background-clip:text !important;
+			-webkit-text-fill-color:transparent !important;
+			background-clip:text !important;
+			color:#000000 !important;
+			margin: 0 0 8px;
+			font-family: "Source Serif 4", serif !important;
+			text-shadow:none !important;
+			-webkit-font-smoothing:antialiased;
+			-moz-osx-font-smoothing:grayscale;
+			display:inline-block;
+		}
+		
+		.auth-card .hero-sub{
+			font-size: 16px;
+			color: rgba(0,0,0,0.6);
+			margin: 0 0 32px;
+			font-family: "Inter", sans-serif;
+		}
+		
+		.auth-card label{
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			margin: 0 0 8px 2px;
+			color: #000000;
+			font-weight: 600;
+			font-size: 14px;
+			font-family: "Inter", sans-serif;
+		}
+		
+		.auth-card label i{
+			font-size: 16px;
+			color: rgba(0,0,0,0.6);
+		}
+		
+		.auth-card .input{
+			width: 100%;
+			box-sizing: border-box;
+			background: #ffffff;
+			border: 1.5px solid rgba(0,0,0,0.15);
+			color: #000000;
+			border-radius: 12px;
+			padding: 14px 16px;
+			outline: none;
+			transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+			font-size: 15px;
+			font-family: "Inter", sans-serif;
+		}
+		
+		.auth-card .input:focus{
+			border-color: #000000;
+			box-shadow: 0 0 0 4px rgba(0,0,0,0.1);
+			background: #ffffff;
+		}
+		
+		.auth-card .input::placeholder{
+			color: rgba(0,0,0,0.4);
+		}
+		
+		.alert{
+			padding: 14px 16px;
+			border-radius: 12px;
+			margin-bottom: 20px;
+			font-size: 14px;
+			font-family: "Inter", sans-serif;
+			display: none;
+		}
+		
+		.alert.show{
+			display: block;
+			animation: slideDown 0.3s ease-out;
+		}
+		
+		@keyframes slideDown{
+			from{
+				opacity: 0;
+				transform: translateY(-10px);
+			}
+			to{
+				opacity: 1;
+				transform: translateY(0);
+			}
+		}
+		
+		.alert-error{
+			background: rgba(0,0,0,0.05);
+			border: 1.5px solid rgba(0,0,0,0.2);
+			color: #000000;
+		}
+		
+		.auth-card .btn:disabled{
+			opacity: 0.6;
+			cursor: not-allowed;
+			transform: none;
+		}
+		
+		.auth-actions{
+			display: flex;
+			gap: 12px;
+			justify-content: space-between;
+			align-items: center;
+			margin-top: 24px;
+		}
+		
+		.auth-actions .badge{
+			color: rgba(0,0,0,0.6);
+			text-decoration: none;
+			font-size: 14px;
+			font-weight: 500;
+			transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+		}
+		
+		.auth-actions .badge:hover{
+			color: #000000;
+		}
+		
+		/* 按钮 - 黑灰白三色设计 */
+		.auth-card .btn{
+			background: #000000;
+			color: #ffffff;
+			border: none;
+			border-radius: 12px;
+			padding: 14px 28px;
+			font-size: 16px;
+			font-weight: 600;
+			font-family: "Inter", sans-serif;
+			cursor: pointer;
+			transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+			box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+			position: relative;
+			overflow: hidden;
+		}
+		
+		.auth-card .btn::before{
+			content: '';
+			position: absolute;
+			top: 0;
+			left: -100%;
+			width: 100%;
+			height: 100%;
+			background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+			transition: left 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+		}
+		
+		.auth-card .btn:hover::before{
+			left: 100%;
+		}
+		
+		.auth-card .btn:hover{
+			transform: translateY(-2px);
+			box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+			background: #1a1a1a;
+		}
+		
+		.auth-card .btn:active{
+			transform: translateY(0);
+			box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+		}
+		
+		@media (max-width: 768px){
+			.auth-card .card{
+				padding: 32px 24px;
+			}
+			
+			.auth-card .hero-title{
+				font-size: 28px;
+			}
+		}
+    </style>
+</head>
+<body class="aw">
+	<div class="auth-background">
+		<a-waves id="wavy-lines">
+			<svg class="js-svg"></svg>
+		</a-waves>
+	</div>
+	<div class="auth-shell container">
+		<div class="auth-card">
+			<div class="card">
+				<div class="hero">
+					<h1 class="hero-title">欢迎回来</h1>
+					<div class="hero-sub">请登录您的账号</div>
+				</div>
+				<form id="loginForm">
+					<label>
+						<i class="bi bi-person"></i>
+						用户名
+					</label>
+					<input class="input" type="text" name="username" placeholder="输入用户名" autocomplete="username" required>
+					<label style="margin-top:16px">
+						<i class="bi bi-lock"></i>
+						密码
+					</label>
+					<input class="input" type="password" name="password" placeholder="输入密码" autocomplete="current-password" required>
+					<div class="auth-actions">
+						<a href="/register" class="badge">没有账号？去注册</a>
+						<button class="btn" type="submit">
+							<i class="bi bi-box-arrow-in-right" style="margin-right: 6px;"></i>
+							登录
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+<script>
+	// 应用白色背景主题
+	document.documentElement.setAttribute('data-theme','light');
+	document.body.style.background = '#ffffff';
+	
+	// SVG波浪线条效果实现 - 参照 CodePen wodniack/abeMZXQ
+	// 创建自定义元素类
+	class AWaves extends HTMLElement {
+		connectedCallback() {
+			this.svg = this.querySelector('.js-svg');
+			
+			if (!this.svg) {
+				console.error('SVG element not found');
+				return;
+			}
+			
+			this.mouse = {
+				x: -10,
+				y: 0,
+				lx: 0,
+				ly: 0,
+				sx: 0,
+				sy: 0,
+				v: 0,
+				vs: 0,
+				a: 0,
+				set: false,
+			};
+			
+			this.lines = [];
+			this.paths = [];
+			
+			// 使用全局加载状态管理，确保 Noise 库加载完成
+			if (typeof Noise !== 'undefined') {
+				// 库已加载，直接初始化
+				this.noise = new Noise(Math.random());
+				this.init();
+			} else {
+				// 等待库加载完成
+				if (window.NoiseLoadState) {
+					window.NoiseLoadState.onReady(() => {
+						if (typeof Noise !== 'undefined') {
+							this.noise = new Noise(Math.random());
+							this.init();
+						} else {
+							console.warn('Noise library still not available after ready callback');
+						}
+					});
+				} else {
+					// 降级方案：如果状态管理器不存在，使用轮询
+					const checkNoise = setInterval(() => {
+						if (typeof Noise !== 'undefined') {
+							clearInterval(checkNoise);
+							this.noise = new Noise(Math.random());
+							this.init();
+						}
+					}, 100);
+					setTimeout(() => {
+						clearInterval(checkNoise);
+						if (typeof Noise === 'undefined') {
+							console.warn('Noise library loading timeout, initializing with fallback');
+							// 使用降级方案
+							if (window.NoiseLoadState) {
+								window.NoiseLoadState.loadFallback();
+								if (typeof Noise !== 'undefined') {
+									this.noise = new Noise(Math.random());
+									this.init();
+								}
+							}
+						}
+					}, 15000);
+				}
+			}
+		}
+		
+		init() {
+			this.setSize();
+			this.setLines();
+			this.bindEvents();
+			requestAnimationFrame(this.tick.bind(this));
+		}
+		
+		bindEvents() {
+			window.addEventListener('resize', this.onResize.bind(this));
+			window.addEventListener('mousemove', this.onMouseMove.bind(this));
+			this.addEventListener('touchmove', this.onTouchMove.bind(this));
+		}
+		
+		onResize() {
+			this.setSize();
+			this.setLines();
+		}
+		
+		onMouseMove(e) {
+			this.updateMousePosition(e.pageX, e.pageY);
+		}
+		
+		onTouchMove(e) {
+			e.preventDefault();
+			const touch = e.touches[0];
+			this.updateMousePosition(touch.clientX, touch.clientY);
+		}
+		
+		updateMousePosition(x, y) {
+			const { mouse } = this;
+			mouse.x = x - this.bounding.left;
+			mouse.y = y - this.bounding.top + window.scrollY;
+			
+			if (!mouse.set) {
+				mouse.sx = mouse.x;
+				mouse.sy = mouse.y;
+				mouse.lx = mouse.x;
+				mouse.ly = mouse.y;
+				mouse.set = true;
+			}
+		}
+		
+		setSize() {
+			this.bounding = this.getBoundingClientRect();
+			this.svg.style.width = `${this.bounding.width}px`;
+			this.svg.style.height = `${this.bounding.height}px`;
+			this.svg.setAttribute('viewBox', `0 0 ${this.bounding.width} ${this.bounding.height}`);
+		}
+		
+		setLines() {
+			const { width, height } = this.bounding;
+			this.lines = [];
+			
+			this.paths.forEach((path) => path.remove());
+			this.paths = [];
+			
+			const xGap = 10;
+			const yGap = 32;
+			const oWidth = width + 200;
+			const oHeight = height + 30;
+			const totalLines = Math.ceil(oWidth / xGap);
+			const totalPoints = Math.ceil(oHeight / yGap);
+			const xStart = (width - xGap * totalLines) / 2;
+			const yStart = (height - yGap * totalPoints) / 2;
+			
+			for (let i = 0; i <= totalLines; i++) {
+				const points = [];
+				for (let j = 0; j <= totalPoints; j++) {
+					points.push({
+						x: xStart + xGap * i,
+						y: yStart + yGap * j,
+						wave: { x: 0, y: 0 },
+						cursor: { x: 0, y: 0, vx: 0, vy: 0 },
+					});
+				}
+				
+				const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+				path.classList.add('a__line', 'js-line');
+				this.svg.appendChild(path);
+				this.paths.push(path);
+				this.lines.push(points);
+			}
+		}
+		
+		movePoints(time) {
+			const { lines, mouse, noise } = this;
+			
+			lines.forEach((points) => {
+				points.forEach((p) => {
+					// Wave movement
+					const move = noise.perlin2(
+						(p.x + time * 0.0125) * 0.002,
+						(p.y + time * 0.005) * 0.0015
+					) * 12;
+					p.wave.x = Math.cos(move) * 32;
+					p.wave.y = Math.sin(move) * 16;
+					
+					// Mouse effect
+					const dx = p.x - mouse.sx;
+					const dy = p.y - mouse.sy;
+					const d = Math.hypot(dx, dy);
+					const l = Math.max(175, mouse.vs);
+					
+					if (d < l) {
+						const s = 1 - d / l;
+						const f = Math.cos(d * 0.001) * s;
+						p.cursor.vx += Math.cos(mouse.a) * f * l * mouse.vs * 0.00065;
+						p.cursor.vy += Math.sin(mouse.a) * f * l * mouse.vs * 0.00065;
+					}
+					
+					p.cursor.vx += (0 - p.cursor.x) * 0.005;
+					p.cursor.vy += (0 - p.cursor.y) * 0.005;
+					p.cursor.vx *= 0.925;
+					p.cursor.vy *= 0.925;
+					p.cursor.x += p.cursor.vx * 2;
+					p.cursor.y += p.cursor.vy * 2;
+					p.cursor.x = Math.min(100, Math.max(-100, p.cursor.x));
+					p.cursor.y = Math.min(100, Math.max(-100, p.cursor.y));
+				});
+			});
+		}
+		
+		moved(point, withCursorForce = true) {
+			const coords = {
+				x: point.x + point.wave.x + (withCursorForce ? point.cursor.x : 0),
+				y: point.y + point.wave.y + (withCursorForce ? point.cursor.y : 0),
+			};
+			coords.x = Math.round(coords.x * 10) / 10;
+			coords.y = Math.round(coords.y * 10) / 10;
+			return coords;
+		}
+		
+		drawLines() {
+			const { lines, paths } = this;
+			
+			lines.forEach((points, lIndex) => {
+				let p1 = this.moved(points[0], false);
+				let d = `M ${p1.x} ${p1.y}`;
+				
+				points.forEach((p1, pIndex) => {
+					const isLast = pIndex === points.length - 1;
+					p1 = this.moved(p1, !isLast);
+					const p2 = this.moved(
+						points[pIndex + 1] || points[points.length - 1],
+						!isLast
+					);
+					d += `L ${p1.x} ${p1.y}`;
+				});
+				
+				paths[lIndex].setAttribute('d', d);
+			});
+		}
+		
+		tick(time) {
+			const { mouse } = this;
+			
+			mouse.sx += (mouse.x - mouse.sx) * 0.1;
+			mouse.sy += (mouse.y - mouse.sy) * 0.1;
+			
+			const dx = mouse.x - mouse.lx;
+			const dy = mouse.y - mouse.ly;
+			const d = Math.hypot(dx, dy);
+			
+			mouse.v = d;
+			mouse.vs += (d - mouse.vs) * 0.1;
+			mouse.vs = Math.min(100, mouse.vs);
+			
+			mouse.lx = mouse.x;
+			mouse.ly = mouse.y;
+			mouse.a = Math.atan2(dy, dx);
+			
+			this.style.setProperty('--x', `${mouse.sx}px`);
+			this.style.setProperty('--y', `${mouse.sy}px`);
+			
+			this.movePoints(time);
+			this.drawLines();
+			
+			requestAnimationFrame(this.tick.bind(this));
+		}
+	}
+	
+	// 注册自定义元素
+	if (!customElements.get('a-waves')) {
+		customElements.define('a-waves', AWaves);
+	}
+	
+	// 全局 Noise 库加载状态管理
+	window.NoiseLoadState = {
+		loading: false,
+		loaded: false,
+		callbacks: [],
+		init: function() {
+			if (this.loaded || typeof Noise !== 'undefined') {
+				this.loaded = true;
+				this.notifyAll();
+				return;
+			}
+			
+			if (this.loading) {
+				return; // 已经在加载中
+			}
+			
+			this.loading = true;
+			
+			// 直接使用本地 Perlin Noise 实现（避免 CDN CORS 问题）
+			// 本地实现性能更好，无网络延迟，无 CORS 错误
+			this.loadFallback();
+		},
+		
+		loadFallback: function() {
+			// 完整的 Perlin Noise 降级实现
+			if (typeof Noise === 'undefined') {
+				// 简化的 Perlin Noise 实现
+				window.Noise = function(seed) {
+					this.seed = seed || Math.random() * 1000;
+					// 使用固定的排列表（Perlin Noise 标准实现）
+					const p = [151,160,137,91,90,15,131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,8,99,37,240,21,10,23,190,6,148,247,120,234,75,0,26,197,62,94,252,219,203,117,35,11,32,57,177,33,88,237,149,56,87,174,20,125,136,171,168,68,175,74,165,71,134,139,48,27,166,77,146,158,231,83,111,229,122,60,211,133,230,220,105,92,41,55,46,245,40,244,102,143,54,65,25,63,161,1,216,80,73,209,76,132,187,208,89,18,169,200,196,135,130,116,188,159,86,164,100,109,198,173,186,3,64,52,217,226,250,124,123,5,202,38,147,118,126,255,82,85,212,207,206,59,227,47,16,58,17,182,189,28,42,223,183,170,213,119,248,152,2,44,154,163,70,221,153,101,155,167,43,172,9,129,22,39,253,19,98,108,110,79,113,224,232,178,185,112,104,218,246,97,228,251,34,242,193,238,210,144,12,191,179,162,241,81,51,145,235,249,14,239,107,49,192,214,31,181,199,106,157,184,84,204,176,115,121,50,45,127,4,150,254,138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180];
+					this.perm = [];
+					for (let i = 0; i < 512; i++) {
+						this.perm[i] = p[i % 256];
+					}
+				};
+				
+				// 实现 perlin2 方法（2D Perlin Noise）
+				Noise.prototype.perlin2 = function(x, y) {
+					const X = Math.floor(x) & 255;
+					const Y = Math.floor(y) & 255;
+					const xf = x - Math.floor(x);
+					const yf = y - Math.floor(y);
+					
+					const u = this.fade(xf);
+					const v = this.fade(yf);
+					
+					const a = this.perm[X] + Y;
+					const aa = this.perm[a];
+					const ab = this.perm[a + 1];
+					const b = this.perm[X + 1] + Y;
+					const ba = this.perm[b];
+					const bb = this.perm[b + 1];
+					
+					return this.lerp(v,
+						this.lerp(u,
+							this.grad(this.perm[aa], xf, yf),
+							this.grad(this.perm[ba], xf - 1, yf)
+						),
+						this.lerp(u,
+							this.grad(this.perm[ab], xf, yf - 1),
+							this.grad(this.perm[bb], xf - 1, yf - 1)
+						)
+					);
+				};
+				
+				// 辅助函数
+				Noise.prototype.fade = function(t) {
+					return t * t * t * (t * (t * 6 - 15) + 10);
+				};
+				
+				Noise.prototype.lerp = function(t, a, b) {
+					return a + t * (b - a);
+				};
+				
+				Noise.prototype.grad = function(hash, x, y) {
+					const h = hash & 3;
+					const u = h < 2 ? x : y;
+					const v = h < 2 ? y : x;
+					return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v);
+				};
+				
+				// 为了兼容性，也提供 noise2D 方法
+				Noise.prototype.noise2D = function(x, y) {
+					return this.perlin2(x, y);
+				};
+				
+				this.loaded = true;
+				this.notifyAll();
+			}
+		},
+		
+		onReady: function(callback) {
+			if (this.loaded || typeof Noise !== 'undefined') {
+				callback();
+			} else {
+				this.callbacks.push(callback);
+				if (!this.loading) {
+					this.init();
+				}
+			}
+		},
+		
+		notifyAll: function() {
+			this.callbacks.forEach(cb => {
+				try {
+					cb();
+				} catch (e) {
+					console.error('Error in Noise ready callback:', e);
+				}
+			});
+			this.callbacks = [];
+		}
+	};
+	
+	// 加载Noise库并初始化
+	function initWavyLines() {
+		const wavesElement = document.getElementById('wavy-lines');
+		if (!wavesElement) {
+			console.error('a-waves element not found');
+			return;
+		}
+		
+		// 确保 Noise 库加载完成后再继续
+		window.NoiseLoadState.onReady(() => {
+			// 库已加载，可以安全初始化
+		});
+	}
+	
+	// DOM加载完成后立即开始加载 Noise 库
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', () => {
+			window.NoiseLoadState.init();
+			initWavyLines();
+		});
+	} else {
+		window.NoiseLoadState.init();
+		initWavyLines();
+	}
+	
+	(function(){
+		
+		// 移除任何遗留扫码/手机登录元素（稳妥）
+		['qr','qr-login','qrcode','wxlogin','wechat-login','scan-box'].forEach(id=>{ 
+			const el=document.getElementById(id); 
+			if(el) el.remove(); 
+		});
+		Array.from(document.querySelectorAll('.qr, .qr-login, .wechat, .qrcode, .scan, .tab-qr, .tab-phone')).forEach(el=>el.remove());
+		
+		// 获取元素
+		const loginForm = document.getElementById('loginForm');
+		const errorAlert = document.createElement('div');
+		errorAlert.className = 'alert alert-error';
+		errorAlert.id = 'errorAlert';
+		errorAlert.style.display = 'none';
+		loginForm.insertBefore(errorAlert, loginForm.firstChild);
+		
+		function showError(message){
+			errorAlert.textContent = message;
+			errorAlert.style.display = 'block';
+			errorAlert.classList.add('show');
+		}
+		
+		// 提交
+		document.getElementById('loginForm').addEventListener('submit', function(e){ 
+			e.preventDefault();
+			errorAlert.style.display = 'none';
+			errorAlert.classList.remove('show');
+			
+			const fd = new FormData(e.target);
+			const payload = { 
+				username: String(fd.get('username')||'').trim(), 
+				password: String(fd.get('password')||'') 
+			};
+			
+			if(!payload.username || !payload.password){ 
+				showError('请填写用户名与密码'); 
+				return; 
+			}
+			
+			const submitBtn = this.querySelector('button[type="submit"]');
+			submitBtn.disabled = true;
+			submitBtn.innerHTML = '<i class="bi bi-hourglass-split" style="margin-right: 6px;"></i>登录中...';
+			
+			fetch('/api/login', { 
+				method:'POST', 
+				headers:{'Content-Type':'application/json'}, 
+				body: JSON.stringify(payload) 
+			})
+			.then(r=>r.json().then(j=>({ok:r.ok, j})))
+			.then(({ok,j})=>{ 
+				if(!ok) throw new Error(j && (j.detail||j.error) || '登录失败'); 
+				try{ 
+					if(j && j.user){ 
+						localStorage.setItem('yuni_user', JSON.stringify(j.user)); 
+					}
+					if(j && j.token){
+						localStorage.setItem('yuni_token', j.token);
+					}
+				}catch(_){} 
+				window.location.href = '/main'; 
+			})
+			.catch(err=> {
+				showError('登录失败：' + (err.message||err));
+				submitBtn.disabled = false;
+				submitBtn.innerHTML = '<i class="bi bi-box-arrow-in-right" style="margin-right: 6px;"></i>登录';
+			});
+		});
+	})();
+</script>
+</body>
+</html>

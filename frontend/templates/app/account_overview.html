@@ -1,0 +1,171 @@
+{% extends 'app/account_base.html' %}
+{% block content %}
+<style>
+	.account-overview-profile {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		padding: 0;
+		border-bottom: 1px solid #E5E5E5;
+		margin-bottom: 40px;
+		padding-bottom: 40px;
+	}
+	
+	.account-overview-avatar {
+		width: 120px;
+		height: 120px;
+		border-radius: 50%;
+		background: #F5F5F5;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin-bottom: 20px;
+		overflow: hidden;
+		border: 2px solid #E5E5E5;
+	}
+	
+	.account-overview-avatar img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+	
+	.account-overview-avatar svg {
+		width: 60px;
+		height: 60px;
+		stroke: #888;
+	}
+	
+	.account-overview-name {
+		font-size: 28px;
+		font-weight: 700;
+		color: #000;
+		margin-bottom: 8px;
+	}
+	
+	.account-overview-email {
+		font-size: 15px;
+		color: #888;
+	}
+	
+	.account-overview-stats {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+		gap: 20px;
+		margin-top: 40px;
+	}
+	
+	.account-stat-card {
+		background: #F5F5F7;
+		border-radius: 16px;
+		padding: 24px;
+		transition: all 0.2s;
+	}
+	
+	.account-stat-card:hover {
+		background: #EEEEEE;
+		transform: translateY(-2px);
+	}
+	
+	.account-stat-label {
+		font-size: 13px;
+		color: #888;
+		margin-bottom: 8px;
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+		font-weight: 600;
+	}
+	
+	.account-stat-value {
+		font-size: 32px;
+		font-weight: 700;
+		color: #000;
+		line-height: 1.2;
+	}
+</style>
+
+<div class="account-overview-profile">
+	<div class="account-overview-avatar" id="overviewAvatar">
+		<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+			<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+			<circle cx="12" cy="7" r="4"></circle>
+		</svg>
+		<img id="overviewAvatarImage" style="display:none;" />
+	</div>
+	<h2 class="account-overview-name" id="overviewName">用户</h2>
+	<div class="account-overview-email" id="overviewEmail">未设置邮箱</div>
+</div>
+
+<div class="account-overview-stats">
+	<div class="account-stat-card">
+		<div class="account-stat-label">已使用时长</div>
+		<div class="account-stat-value" id="usageTime">0 小时</div>
+	</div>
+	<div class="account-stat-card">
+		<div class="account-stat-label">剩余额度</div>
+		<div class="account-stat-value" id="remainingQuota">∞</div>
+	</div>
+	<div class="account-stat-card">
+		<div class="account-stat-label">识别次数</div>
+		<div class="account-stat-value" id="transcriptionCount">0</div>
+	</div>
+</div>
+
+<script>
+(function() {
+	try {
+		const u = JSON.parse(localStorage.getItem('yuni_user') || 'null');
+		if (u) {
+			// 设置用户名
+			const nameEl = document.getElementById('overviewName');
+			if (nameEl) {
+				nameEl.textContent = u.username || u.name || '用户';
+			}
+			
+			// 设置邮箱
+			const emailEl = document.getElementById('overviewEmail');
+			if (emailEl) {
+				emailEl.textContent = u.email || '未设置邮箱';
+			}
+			
+			// 设置头像
+			const avatarEl = document.getElementById('overviewAvatar');
+			const avatarImg = document.getElementById('overviewAvatarImage');
+			if (u.avatar && avatarImg) {
+				avatarImg.src = u.avatar;
+				avatarImg.style.display = 'block';
+				const svg = avatarEl.querySelector('svg');
+				if (svg) svg.style.display = 'none';
+				// 添加错误处理：图片加载失败时显示占位符
+				avatarImg.onerror = function() {
+					this.style.display = 'none';
+					const svg = avatarEl.querySelector('svg');
+					if (svg) svg.style.display = 'block';
+				};
+			}
+		}
+		
+		// 获取统计数据
+		const token = localStorage.getItem('yuni_token') || '';
+		if (token) {
+			fetch('/api/history', {
+				headers: {
+					'Authorization': `Bearer ${token}`
+				}
+			})
+			.then(r => r.json())
+			.then(d => {
+				const items = d.items || [];
+				const countEl = document.getElementById('transcriptionCount');
+				if (countEl) {
+					countEl.textContent = items.length;
+				}
+			})
+			.catch(() => {});
+		}
+	} catch(e) {
+		console.error('加载用户信息失败:', e);
+	}
+})();
+</script>
+{% endblock %}

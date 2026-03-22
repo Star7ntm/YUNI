@@ -1,0 +1,2639 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="/static/styles.css">
+	<!-- Bootstrap Icons - 带备用方案 -->
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" 
+		  onerror="this.onerror=null; this.href='https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css'; this.onerror=function(){console.warn('Bootstrap Icons failed to load from all CDNs');}">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<!-- 预加载关键字体以优化 LCP -->
+	<link rel="preload" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@700;800&display=block" as="style" onload="this.onload=null;this.rel='stylesheet'">
+	<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@700;800&display=block"></noscript>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Serif+4:wght@700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=block" rel="stylesheet" media="print" onload="this.media='all'">
+	<noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Serif+4:wght@700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=block" rel="stylesheet"></noscript>
+	<script src="/static/smooth-scroll.js" defer></script>
+	<title>YuNi · 语音识别平台</title>
+	<style>
+		* { box-sizing: border-box; margin: 0; padding: 0; }
+		
+		.landing-page{ 
+			min-height:100vh; 
+			position:relative; 
+			overflow-x:hidden;
+			background: #ffffff; /* 白色背景 */
+		}
+		
+		/* Hero Section - 完全全屏 */
+		.hero-section{ 
+			position:relative;
+			width:100%;
+			height:100vh;
+			min-height:100vh;
+			display:flex; 
+			align-items:center; 
+			justify-content:center; 
+			overflow:hidden;
+			background: #ffffff; /* 白色背景 */
+		}
+		
+		/* 波纹效果容器 */
+		.ripple-container{
+			position:absolute;
+			top:0;
+			left:0;
+			width:100%;
+			height:100%;
+			z-index:0;
+			overflow:hidden;
+			background: #ffffff; /* 白色背景 */
+		}
+		
+		/* SVG 波浪线条容器 */
+		a-waves{
+			--x: -0.5rem;
+			--y: 50%;
+			position:absolute;
+			top:0;
+			left:0;
+			margin:0;
+			padding:0;
+			width:100%;
+			height:100%;
+			overflow:hidden;
+			pointer-events:auto;
+		}
+		
+		a-waves svg{
+			display:block;
+			width:100%;
+			height:100%;
+		}
+		
+		a-waves svg path{
+			fill:none;
+			stroke:rgba(10, 10, 10, 0.15); /* 深色细线条 */
+			stroke-width:1px;
+		}
+		
+		/* 内容容器 */
+		.hero-content{ 
+			position:relative;
+			z-index:2;
+			max-width:1200px;
+			width:100%;
+			padding:0 24px;
+			text-align:center;
+			/* 移除初始动画延迟以优化 LCP - 立即显示内容 */
+			opacity:1;
+			transform:none;
+		}
+		
+		/* 仅在动画支持时应用淡入效果（不影响 LCP） */
+		@media (prefers-reduced-motion: no-preference) {
+			.hero-content {
+				animation:fadeInUp 0.4s ease-out;
+			}
+		}
+		
+		@keyframes fadeInUp{
+			from{ 
+				opacity:0; 
+				transform:translateY(40px); 
+			}
+			to{ 
+				opacity:1; 
+				transform:translateY(0); 
+			}
+		}
+		
+		/* Adaline.ai 风格的平滑动画 */
+		@keyframes slideInFromBottom{
+			from{
+				opacity:0;
+				transform:translateY(60px) scale(0.95);
+			}
+			to{
+				opacity:1;
+				transform:translateY(0) scale(1);
+			}
+		}
+		
+		@keyframes fadeInScale{
+			from{
+				opacity:0;
+				transform:scale(0.9);
+			}
+			to{
+				opacity:1;
+				transform:scale(1);
+			}
+		}
+		
+		/* Contact me 部分 */
+		.hero-contact-header{
+			display:flex;
+			align-items:center;
+			justify-content:center;
+			gap:16px;
+			margin-bottom:40px;
+			font-family:"Inter", sans-serif;
+		}
+		
+		.hero-contact-label{
+			font-size:14px;
+			font-weight:600;
+			color:rgba(0,0,0,0.6);
+			text-transform:uppercase;
+			letter-spacing:1px;
+		}
+		
+		.hero-social-icons{
+			display:flex;
+			gap:12px;
+			align-items:center;
+		}
+		
+		.hero-social-icon{
+			width:36px;
+			height:36px;
+			border-radius:50%;
+			background:#ffffff;
+			border:1px solid rgba(0,0,0,0.15);
+			display:flex;
+			align-items:center;
+			justify-content:center;
+			cursor:pointer;
+			transition:all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); /* 弹性动画 */
+			color:#000000;
+			font-size:16px;
+			position:relative;
+			overflow:hidden;
+		}
+		
+		.hero-social-icon::before {
+			content: '';
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			width: 0;
+			height: 0;
+			border-radius: 50%;
+			background: rgba(0,0,0,0.1);
+			transform: translate(-50%, -50%);
+			transition: width 0.4s ease, height 0.4s ease;
+		}
+		
+		.hero-social-icon:hover::before {
+			width: 100%;
+			height: 100%;
+		}
+		
+		.hero-social-icon:hover{
+			background:#000000;
+			border-color:#000000;
+			color:#ffffff;
+			transform:translateY(-4px) scale(1.1); /* 增强悬停效果 */
+			box-shadow:0 8px 20px rgba(0,0,0,0.25), 0 4px 12px rgba(0,0,0,0.15);
+		}
+		
+		.hero-social-icon:active {
+			transform:translateY(-2px) scale(1.05); /* 点击反馈 */
+			transition: transform 0.1s ease;
+		}
+		
+		/* 优化 LCP：简化渲染效果，使用纯色而非渐变 */
+		.hero-title,
+		.aw .hero-title,
+		.landing-page .hero-title,
+		h1.hero-title{ 
+			font-size:clamp(48px, 7vw, 96px); 
+			line-height:1.05; 
+			font-weight:900; /* 增加字重 */
+			letter-spacing:-0.04em; 
+			/* 使用纯黑色以优化 LCP（移除渐变减少渲染时间） */
+			color:#000000 !important;
+			margin:0 0 60px; 
+			font-family:"Source Serif 4", serif !important;
+			/* 轻微文字阴影，增强层次感 */
+			text-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+			-webkit-font-smoothing:antialiased;
+			-moz-osx-font-smoothing:grayscale;
+			display:inline-block;
+			transition: transform 0.3s ease, text-shadow 0.3s ease;
+			/* 确保字体快速加载 */
+			font-display: block;
+		}
+		
+		/* 仅在字体加载完成后应用渐变效果（渐进增强） */
+		@supports (background-clip: text) {
+			.hero-title.loaded {
+				background:linear-gradient(135deg, #000000 0%, #1a1a1a 30%, #4a4a4a 70%, #666666 100%) !important;
+				-webkit-background-clip:text !important;
+				-webkit-text-fill-color:transparent !important;
+				background-clip:text !important;
+			}
+		}
+		
+		.hero-title:hover {
+			transform: scale(1.02);
+			text-shadow: 0 4px 12px rgba(0,0,0,0.15), 0 8px 24px rgba(0,0,0,0.08) !important;
+		}
+		
+		/* 联系信息部分 */
+		.hero-contact-info{
+			display:flex;
+			align-items:center;
+			justify-content:center;
+			gap:0;
+			margin-bottom:40px;
+			flex-wrap:wrap;
+			font-family:"Inter", sans-serif;
+		}
+		
+		.hero-contact-item{
+			display:flex;
+			flex-direction:column;
+			align-items:center;
+			gap:8px;
+			padding:0 24px;
+			position:relative;
+		}
+		
+		.hero-contact-item:not(:last-child)::after{
+			content:'';
+			position:absolute;
+			right:0;
+			top:50%;
+			transform:translateY(-50%);
+			width:1px;
+			height:30px;
+			background:rgba(0,0,0,0.2);
+		}
+		
+		.hero-contact-label-small{
+			font-size:11px;
+			font-weight:600;
+			color:rgba(0,0,0,0.6);
+			text-transform:uppercase;
+			letter-spacing:1.5px;
+			display:flex;
+			align-items:center;
+			gap:6px;
+		}
+		
+		.hero-contact-label-small i{
+			font-size:12px;
+		}
+		
+		.hero-contact-value{
+			font-size:15px;
+			font-weight:500;
+			color:#000000;
+		}
+		
+		/* SAY HI 按钮 */
+		.hero-say-hi-btn{
+			background:#000000;
+			color:#ffffff;
+			border:none;
+			border-radius:8px;
+			padding:14px 32px;
+			font-size:15px;
+			font-weight:600;
+			font-family:"Inter", sans-serif;
+			cursor:pointer;
+			transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+			margin-top:20px;
+		}
+		
+		.hero-say-hi-btn:hover{
+			background:#1a1a1a;
+			transform:translateY(-2px);
+			box-shadow:0 8px 24px rgba(0,0,0,0.2);
+		}
+		
+		.hero-say-hi-btn:active{
+			transform:translateY(0);
+		}
+		
+		
+		/* 按钮样式 - 黑灰白三色设计 */
+		.hero-ctas .btn{
+			background:#000000; /* 纯黑主按钮 */
+			color:#FFFFFF;
+			border:none;
+			border-radius:12px;
+			padding:16px 32px;
+			font-size:16px;
+			font-weight:600;
+			font-family:"Inter", sans-serif;
+			cursor:pointer;
+			transition:all 0.3s ease; /* 顺滑过渡 */
+			box-shadow:0 4px 12px rgba(0,0,0,0.1);
+			position:relative;
+			overflow:hidden;
+		}
+		
+		.hero-ctas .btn::before{
+			content:'';
+			position:absolute;
+			top:0;
+			left:-100%;
+			width:100%;
+			height:100%;
+			background:linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+			transition:left 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+		}
+		
+		.hero-ctas .btn:hover::before{
+			left:100%;
+		}
+		
+		.hero-ctas .btn:hover{
+			transform:translateY(-2px);
+			box-shadow:0 8px 20px rgba(0,0,0,0.15);
+			background:#333333; /* 深灰底（Hover状态） */
+		}
+		
+		.hero-ctas .btn:active{
+			transform:translateY(0);
+			box-shadow:0 2px 8px rgba(0,0,0,0.2);
+		}
+		
+		.hero-ctas .btn.secondary{
+			background:#ffffff; /* 白色次要按钮 */
+			color:#000000;
+			border:1.5px solid #0a0a0a;
+			box-shadow:0 4px 16px rgba(0,0,0,0.1), 0 8px 32px rgba(0,0,0,0.08);
+		}
+		
+		.hero-ctas .btn.secondary::before{
+			background:linear-gradient(90deg, transparent, rgba(0,0,0,0.05), transparent);
+		}
+		
+		.hero-ctas .btn.secondary:hover{
+			background:#f5f5f5; /* 浅灰色悬停 */
+			border-color:#000000;
+			box-shadow:0 8px 24px rgba(0,0,0,0.15), 0 12px 40px rgba(0,0,0,0.1);
+		}
+		
+		.hero-trusted{ 
+			margin-top:80px; 
+			color:rgba(0,0,0,0.6); 
+			font-size:11px; 
+			text-transform:uppercase; 
+			letter-spacing:4px; 
+			font-weight:600;
+			font-family:"Inter", sans-serif;
+		}
+		
+		.hero-logos{ 
+			margin-top:32px; 
+			display:flex; 
+			gap:16px; 
+			justify-content:center; 
+			flex-wrap:wrap; 
+			align-items:center;
+		}
+		
+		.hero-logos .logo-item{ 
+			display:inline-flex; 
+			align-items:center; 
+			color:rgba(0,0,0,0.8); 
+			font-size:13px; 
+			font-weight:600; 
+			background:#ffffff; 
+			border:1px solid rgba(0,0,0,0.15); 
+			padding:10px 20px; 
+			border-radius:999px; 
+			transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+			box-shadow:0 2px 8px rgba(0,0,0,0.08);
+		}
+		
+		.hero-logos .logo-item:hover{ 
+			color:#000000; 
+			border-color:rgba(0,0,0,0.25); 
+			background:#f5f5f5;
+			transform:translateY(-2px);
+			box-shadow:0 4px 16px rgba(0,0,0,0.12);
+		}
+		
+		/* Features Section */
+		.features-section{ 
+			padding:120px 24px; /* 统一内边距 */
+			background:#FFFFFF; /* 纯白背景，移除所有彩色光晕 */
+			position:relative;
+			overflow:hidden;
+		}
+		
+		/* 移除所有彩色光效 - 黑白灰极简风格 */
+		.features-section::before {
+			display:none; /* 彻底移除紫色光斑 */
+		}
+		
+		.features-section::after {
+			display:none; /* 彻底移除蓝色光斑 */
+		}
+		
+		.features-container{ 
+			max-width:1400px; 
+			margin:0 auto;
+			position:relative;
+			z-index:1; /* 确保内容在极光效果之上 */
+		}
+		
+		.features-header{ 
+			text-align:center; 
+			margin-bottom:80px;
+		}
+		
+		.features-title{ 
+			font-size:clamp(36px, 5vw, 60px); 
+			font-weight:800; 
+			color:#000000; 
+			margin:0 0 24px; 
+			font-family:"Source Serif 4", serif;
+			letter-spacing:-0.03em;
+		}
+		
+		.features-subtitle{ 
+			font-size:19px; 
+			color:#666666; /* 中灰色（辅助信息） */
+			max-width:700px; 
+			margin:0 auto;
+			line-height:1.6;
+		}
+		
+		.features-tabs{ 
+			display:flex; 
+			gap:12px; 
+			justify-content:center; 
+			margin-bottom:60px; 
+			flex-wrap:wrap;
+		}
+		
+		.feature-tab{ 
+			padding:16px 32px; 
+			background:#FFFFFF; /* 纯白背景 */
+			border:1px solid #E5E5E5; /* 浅灰边框 */
+			border-radius:12px; 
+			color:#333333; /* 深灰文字 */
+			cursor:pointer; 
+			font-size:15px; 
+			font-weight:600; 
+			transition:all 0.3s ease; /* 顺滑过渡 */
+			position:relative;
+			font-family:"Inter", sans-serif;
+		}
+		
+		.feature-tab:hover{ 
+			border-color:#000000; 
+			color:#000000;
+			transform:translateY(-2px);
+			box-shadow:0 4px 12px rgba(0,0,0,0.08);
+		}
+		
+		.feature-tab:active {
+			transform:translateY(0);
+			transition:transform 0.1s ease;
+		}
+		
+		.feature-tab.active{ 
+			background:#000000; /* 黑底 */
+			border-color:#000000; 
+			color:#FFFFFF; /* 白字 */
+			box-shadow:0 4px 12px rgba(0,0,0,0.12);
+		}
+		
+		.feature-tab .tab-number{ 
+			position:absolute; 
+			top:-12px; 
+			left:20px; 
+			font-size:11px; 
+			color:#666666; 
+			font-weight:800;
+			background:#ffffff;
+			padding:0 6px;
+			font-family:"Inter", sans-serif;
+		}
+		
+		.feature-panel{ 
+			display:none; 
+			padding:60px; 
+			/* 黑白灰极简风格 */
+			background:#FFFFFF;
+			border-radius:24px; 
+			border:1px solid #E5E5E5; /* 浅灰边框 */
+			/* 细腻的投影 */
+			box-shadow:0 20px 40px rgba(0,0,0,0.08);
+			animation:fadeIn 0.5s ease-out;
+			opacity:0;
+			transform:translateY(30px);
+			transition:all 0.3s ease; /* 顺滑过渡 */
+			position:relative;
+			z-index:1;
+		}
+		
+		.feature-panel.active{ 
+			display:block;
+			opacity:1;
+			transform:translateY(0);
+		}
+		
+		@keyframes fadeIn{ 
+			from{ opacity:0; transform:translateY(20px); } 
+			to{ opacity:1; transform:translateY(0); } 
+		}
+		
+		/* 滚动淡入动画 */
+		.fade-in-up{
+			opacity:0;
+			transform:translateY(40px);
+			transition:opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+		}
+		
+		.fade-in-up.visible{
+			opacity:1;
+			transform:translateY(0);
+		}
+		
+		.fade-in-up.delay-1{ transition-delay:0.1s; }
+		.fade-in-up.delay-2{ transition-delay:0.2s; }
+		.fade-in-up.delay-3{ transition-delay:0.3s; }
+		.fade-in-up.delay-4{ transition-delay:0.4s; }
+		
+		/* Apple 风格 Bento Grid 布局 - 60% 文字，40% 视觉 */
+		.feature-panel-content{ 
+			display:grid; 
+			grid-template-columns:60% 40%; 
+			gap:60px; 
+			align-items:center;
+			/* 防止内容溢出 */
+			min-width:0;
+			overflow:hidden;
+		}
+		
+		.feature-panel-text{ 
+			display:flex;
+			flex-direction:column;
+			gap:24px;
+			/* 防止内容溢出 */
+			min-width:0;
+			overflow-wrap:break-word;
+		}
+		
+		.feature-panel-text h3{ 
+			font-size:36px; 
+			font-weight:800; 
+			color:#000000; 
+			margin:0; 
+			font-family:"Source Serif 4", serif;
+			letter-spacing:-0.02em;
+			line-height:1.2;
+		}
+		
+		.feature-panel-text p{ 
+			font-size:18px; 
+			line-height:1.7; 
+			color:#333333; /* 深灰色（正文） */
+			margin:0;
+		}
+		
+		/* 按钮移到左侧文字区域 */
+		.feature-panel-text .btn {
+			background:#000000; /* 黑底 */
+			color:#FFFFFF; /* 白字 */
+			border:none;
+			border-radius:12px;
+			padding:16px 32px;
+			font-size:16px;
+			font-weight:600;
+			font-family:"Inter", sans-serif;
+			cursor:pointer;
+			transition:all 0.3s ease;
+			box-shadow:0 4px 12px rgba(0,0,0,0.1);
+			position:relative;
+			overflow:hidden;
+			display:inline-block;
+			text-decoration:none;
+			align-self:flex-start; /* 左对齐 */
+			margin-top:8px;
+		}
+		
+		.feature-panel-text .btn::before {
+			content:'';
+			position:absolute;
+			top:0;
+			left:-100%;
+			width:100%;
+			height:100%;
+			background:linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+			transition:left 0.5s ease;
+		}
+		
+		.feature-panel-text .btn:hover::before {
+			left:100%;
+		}
+		
+		.feature-panel-text .btn:hover {
+			transform:translateY(-2px);
+			background:#333333; /* 深灰底（Hover状态） */
+			box-shadow:0 8px 20px rgba(0,0,0,0.15);
+		}
+		
+		.feature-panel-text .btn:active {
+			transform:translateY(0);
+			box-shadow:0 2px 8px rgba(0,0,0,0.1);
+		}
+		
+		/* 右侧视觉区域 - 纯 CSS 声波动画 */
+		.feature-panel-visual{ 
+			display:flex;
+			align-items:center;
+			justify-content:center;
+			padding:40px;
+			min-height:200px;
+			position:relative;
+			/* 防止内容溢出 */
+			min-width:0;
+			overflow:hidden;
+		}
+		
+		/* Bootstrap Icons 样式 */
+		.feature-panel-visual i {
+			display:block;
+			max-width:100%;
+			height:auto;
+		}
+		
+		/* 声波动画容器 */
+		.audio-wave {
+			display:flex;
+			align-items:center;
+			justify-content:center;
+			gap:8px;
+			height:120px;
+			position:relative;
+			animation: breathe 2s ease-in-out infinite;
+		}
+		
+		/* 声波线条 */
+		.audio-wave-bar {
+			width:6px;
+			background:#000000;
+			border-radius:3px;
+			animation:waveAnimation 1.2s ease-in-out infinite;
+		}
+		
+		.audio-wave-bar:nth-child(1) { height:20px; animation-delay:0s; }
+		.audio-wave-bar:nth-child(2) { height:40px; animation-delay:0.1s; }
+		.audio-wave-bar:nth-child(3) { height:60px; animation-delay:0.2s; }
+		.audio-wave-bar:nth-child(4) { height:80px; animation-delay:0.3s; }
+		.audio-wave-bar:nth-child(5) { height:100px; animation-delay:0.4s; }
+		.audio-wave-bar:nth-child(6) { height:80px; animation-delay:0.5s; }
+		.audio-wave-bar:nth-child(7) { height:60px; animation-delay:0.6s; }
+		.audio-wave-bar:nth-child(8) { height:40px; animation-delay:0.7s; }
+		.audio-wave-bar:nth-child(9) { height:20px; animation-delay:0.8s; }
+		
+		@keyframes waveAnimation {
+			0%, 100% { 
+				transform:scaleY(0.3);
+				opacity:0.6;
+			}
+			50% { 
+				transform:scaleY(1);
+				opacity:1;
+			}
+		}
+		
+		/* 统一的呼吸动画 */
+		@keyframes breathe {
+			0%, 100% {
+				transform: scale(1);
+				opacity: 0.8;
+			}
+			50% {
+				transform: scale(1.05);
+				opacity: 1;
+			}
+		}
+		
+		/* Tab 2: 科技感手部 SVG */
+		.hand-svg-container {
+			width: 120px;
+			height: 120px;
+			position: relative;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			overflow: hidden;
+		}
+		
+		.hand-svg {
+			width: 100%;
+			height: 100%;
+			position: relative;
+			z-index: 1;
+		}
+		
+		.hand-svg path {
+			fill: none;
+			stroke: #000000;
+			stroke-width: 2;
+			stroke-linecap: round;
+			stroke-linejoin: round;
+			stroke-dasharray: 5 3; /* 虚线效果，增加科技感 */
+		}
+		
+		/* 扫描线 - 从底部移动到指尖 */
+		.hand-scan-line {
+			position: absolute;
+			left: 10%;
+			right: 10%;
+			height: 3px;
+			background: linear-gradient(90deg, 
+				transparent 0%, 
+				rgba(0,0,0,0.3) 20%, 
+				#000000 50%, 
+				rgba(0,0,0,0.3) 80%, 
+				transparent 100%);
+			z-index: 2;
+			animation: scanHand 2.5s linear infinite;
+			pointer-events: none;
+		}
+		
+		@keyframes scanHand {
+			0% {
+				top: 95%;
+				opacity: 0;
+			}
+			3% {
+				opacity: 1;
+			}
+			97% {
+				opacity: 1;
+			}
+			100% {
+				top: 5%;
+				opacity: 0;
+			}
+		}
+		
+		/* Tab 3: 文本书写动画 */
+		.text-stream {
+			width: 140px;
+			height: 100px;
+			position: relative;
+			display: flex;
+			flex-direction: column;
+			justify-content: space-between;
+			align-items: flex-start;
+		}
+		
+		.text-line {
+			width: 0%;
+			height: 4px;
+			background: #000000;
+			border-radius: 2px;
+			position: relative;
+			overflow: visible;
+			animation: writeLine 6s ease-in-out infinite;
+		}
+		
+		/* 书写头部（圆形） */
+		.text-line::after {
+			content: '';
+			position: absolute;
+			top: 50%;
+			right: -4px;
+			transform: translateY(-50%);
+			width: 8px;
+			height: 8px;
+			background: #000000;
+			border-radius: 50%;
+			opacity: 0;
+			animation: writeHead 6s ease-in-out infinite;
+		}
+		
+		/* 每根线条的目标宽度和延迟 */
+		.text-line:nth-child(1) { 
+			--target-width: 80%;
+			animation-delay: 0s;
+		}
+		.text-line:nth-child(2) { 
+			--target-width: 100%;
+			animation-delay: 0.8s;
+		}
+		.text-line:nth-child(3) { 
+			--target-width: 90%;
+			animation-delay: 1.6s;
+		}
+		.text-line:nth-child(4) { 
+			--target-width: 65%;
+			animation-delay: 2.4s;
+		}
+		.text-line:nth-child(5) { 
+			--target-width: 75%;
+			animation-delay: 3.2s;
+		}
+		
+		/* 头部动画延迟与线条同步 */
+		.text-line:nth-child(1)::after { 
+			animation-delay: 0s;
+			--target-width: 80%;
+		}
+		.text-line:nth-child(2)::after { 
+			animation-delay: 0.8s;
+			--target-width: 100%;
+		}
+		.text-line:nth-child(3)::after { 
+			animation-delay: 1.6s;
+			--target-width: 90%;
+		}
+		.text-line:nth-child(4)::after { 
+			animation-delay: 2.4s;
+			--target-width: 65%;
+		}
+		.text-line:nth-child(5)::after { 
+			animation-delay: 3.2s;
+			--target-width: 75%;
+		}
+		
+		/* 书写动画：宽度从0到目标宽度，然后暂停 */
+		/* 总时长6s: 0-0.8s书写第1行, 0.8-1.6s书写第2行, 1.6-2.4s书写第3行, 2.4-3.2s书写第4行, 3.2-4s书写第5行, 4-6s暂停 */
+		@keyframes writeLine {
+			0% {
+				width: 0%;
+			}
+			/* 书写阶段：13.33% (0.8s / 6s) */
+			13.33% {
+				width: var(--target-width);
+			}
+			/* 暂停阶段：13.33% - 100% */
+			100% {
+				width: var(--target-width);
+			}
+		}
+		
+		/* 头部跟随动画 */
+		@keyframes writeHead {
+			0% {
+				opacity: 0;
+			}
+			/* 头部出现 */
+			0.5% {
+				opacity: 1;
+			}
+			/* 头部跟随线条移动到末端 */
+			13.33% {
+				opacity: 1;
+			}
+			/* 头部消失 */
+			14% {
+				opacity: 0;
+			}
+			/* 保持隐藏直到下一轮 */
+			100% {
+				opacity: 0;
+			}
+		}
+		
+		/* 备用方案：简单的麦克风图标（如果声波动画不显示） */
+		.feature-panel-visual .icon-fallback {
+			display:none; /* 默认隐藏 */
+		}
+		
+		/* Stats Section */
+		.stats-section{ 
+			padding:120px 24px;
+			background:linear-gradient(180deg, #ffffff 0%, #fafafa 50%, #ffffff 100%);
+		}
+		
+		.stats-container{ 
+			max-width:1200px; 
+			margin:0 auto;
+		}
+		
+		.stats-header{ 
+			text-align:center; 
+			margin-bottom:80px;
+			position:relative;
+			z-index:1;
+		}
+		
+		.stats-title{ 
+			font-size:clamp(36px, 5vw, 60px); 
+			font-weight:800; 
+			color:#000000; 
+			margin:0 0 24px; 
+			font-family:"Source Serif 4", serif;
+			letter-spacing:-0.03em;
+		}
+		
+		.stats-subtitle{ 
+			font-size:19px; 
+			color:rgba(0,0,0,0.6); 
+			max-width:700px; 
+			margin:0 auto;
+			line-height:1.6;
+		}
+		
+		.stats-grid{ 
+			display:grid; 
+			grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); 
+			gap:32px;
+			margin-top:0;
+			position:relative;
+			z-index:1;
+		}
+		
+		.stat-card{ 
+			text-align:center; 
+			padding:48px 32px; 
+			background:#ffffff; 
+			border-radius:20px; 
+			border:1px solid rgba(0,0,0,0.1); 
+			transition:all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+			position:relative;
+			overflow:hidden;
+			box-shadow:0 2px 8px rgba(0,0,0,0.05);
+		}
+		
+		.stat-card::before{
+			content:'';
+			position:absolute;
+			top:0;
+			left:0;
+			width:100%;
+			height:100%;
+			background:linear-gradient(135deg, rgba(0,0,0,0.05) 0%, transparent 100%);
+			opacity:0;
+			transition:opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+			pointer-events:none;
+		}
+		
+		.stat-card:hover{ 
+			transform:translateY(-12px) scale(1.03); /* 增强悬停动画 */
+			box-shadow:0 20px 60px rgba(0,0,0,0.2), 0 8px 24px rgba(0,0,0,0.1);
+			border-color:rgba(0,0,0,0.2);
+			background:#ffffff;
+		}
+		
+		.stat-card:active {
+			transform:translateY(-6px) scale(1.01); /* 点击反馈 */
+			transition: transform 0.1s ease;
+		}
+		
+		.stat-card:hover::before{
+			opacity:1;
+		}
+		
+		.stat-number-wrapper{
+			display:inline-flex;
+			align-items:baseline;
+			justify-content:center;
+			gap:4px;
+			flex-wrap:wrap;
+		}
+		
+		.stat-number{ 
+			font-size:clamp(48px, 7vw, 88px); 
+			font-weight:800; 
+			color:#000000; 
+			margin:0 0 12px; 
+			font-family:"Source Serif 4", serif; 
+			letter-spacing:-0.03em;
+			line-height:1;
+			display:inline-block;
+		}
+		
+		.stat-number-suffix{
+			font-size:clamp(28px, 5vw, 56px);
+			font-weight:800;
+			color:#000000;
+			font-family:"Source Serif 4", serif;
+			display:inline-block;
+		}
+		
+		.stat-label{ 
+			font-size:18px; 
+			font-weight:600; 
+			color:#000000; 
+			margin:0 0 8px;
+		}
+		
+		.stat-desc{ 
+			font-size:15px; 
+			color:rgba(0,0,0,0.6); 
+			margin:0;
+			line-height:1.5;
+		}
+
+		/* Buttons - 黑灰白三色设计 */
+		.landing-page .btn{ 
+			background:#000000; /* 纯黑主按钮 */
+			color:#FFFFFF;
+			border:none;
+			border-radius:12px;
+			padding:16px 32px;
+			font-size:16px;
+			font-weight:600;
+			font-family:"Inter", sans-serif;
+			cursor:pointer;
+			transition:all 0.3s ease; /* 顺滑过渡 */
+			box-shadow:0 4px 12px rgba(0,0,0,0.1);
+			position:relative;
+			overflow:hidden;
+		}
+		
+		.landing-page .btn::before{
+			content:'';
+			position:absolute;
+			top:0;
+			left:-100%;
+			width:100%;
+			height:100%;
+			background:linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+			transition:left 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+		}
+		
+		.landing-page .btn:hover::before{
+			left:100%;
+		}
+		
+		.landing-page .btn:hover{ 
+			transform:translateY(-2px);
+			box-shadow:0 8px 20px rgba(0,0,0,0.15);
+			background:#333333; /* 深灰底（Hover状态） */
+		}
+		
+		.landing-page .btn:active{ 
+			transform:translateY(0);
+			box-shadow:0 2px 8px rgba(0,0,0,0.2);
+		}
+		
+		.landing-page .btn.secondary{
+			background:#ffffff; /* 白色次要按钮 */
+			color:#000000;
+			border:1.5px solid #0a0a0a;
+			box-shadow:0 4px 16px rgba(0,0,0,0.1), 0 8px 32px rgba(0,0,0,0.08);
+		}
+		
+		.landing-page .btn.secondary::before{
+			background:linear-gradient(90deg, transparent, rgba(0,0,0,0.05), transparent);
+		}
+		
+		.landing-page .btn.secondary:hover{
+			background:#f5f5f5; /* 浅灰色悬停 */
+			border-color:#000000;
+			box-shadow:0 8px 24px rgba(0,0,0,0.15), 0 12px 40px rgba(0,0,0,0.1);
+		}
+		
+		/* Testimonials Section */
+		.testimonials-section{ 
+			padding:120px 24px;
+			background:linear-gradient(180deg, #ffffff 0%, #fafafa 50%, #ffffff 100%);
+		}
+		
+		.testimonials-container{ 
+			max-width:1200px; 
+			margin:0 auto;
+		}
+		
+		.testimonials-header{ 
+			text-align:center; 
+			margin-bottom:80px;
+			position:relative;
+			z-index:1;
+		}
+		
+		.testimonials-title{ 
+			font-size:clamp(36px, 5vw, 60px); 
+			font-weight:800; 
+			color:#000000; 
+			margin:0 0 24px; 
+			font-family:"Source Serif 4", serif;
+			letter-spacing:-0.03em;
+		}
+		
+		.testimonials-subtitle{ 
+			font-size:19px; 
+			color:rgba(0,0,0,0.6); 
+			max-width:700px; 
+			margin:0 auto;
+			line-height:1.6;
+		}
+		
+		/* Apple 风格 Bento Grid 布局 - 严格 3 列网格，强制等高 */
+		.testimonials-grid{ 
+			display:grid; 
+			grid-template-columns:repeat(3, 1fr); /* 严格的 3 列网格 */
+			grid-auto-rows:minmax(300px, auto); /* 统一的 min-height: 300px */
+			gap:24px; /* 统一间距 */
+			margin-top:0;
+			position:relative;
+			z-index:1;
+			align-items:stretch; /* 强制等高 - 确保所有卡片在同一行高度一致 */
+		}
+		
+		/* 移除第一个卡片的特殊跨行布局，确保所有卡片等高 */
+		.testimonial-card:nth-child(1) {
+			/* 移除 grid-row:span 2，让所有卡片在同一行等高 */
+		}
+		
+		/* Apple 风格 Scroll Reveal 动画 */
+		@keyframes appleReveal {
+			from {
+				opacity: 0;
+				transform: translateY(30px);
+			}
+			to {
+				opacity: 1;
+				transform: translateY(0);
+			}
+		}
+		
+		/* Apple 风格卡片设计 - 强制等高布局 */
+		.testimonial-card{ 
+			width:100%; /* 填满网格轨道宽度 */
+			height:100%; /* 填满网格轨道高度 - 强制等高 */
+			min-height:300px; /* 统一的最小高度 */
+			max-height:none; /* 移除任何最大高度限制 */
+			padding:40px 32px; /* 统一内边距 */
+			background:rgba(255, 255, 255, 0.8); /* 极其轻微的灰白色 */
+			border-radius:24px; 
+			border:none;
+			transition:all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+			position:relative;
+			overflow:hidden;
+			/* Apple 风格毛玻璃效果 */
+			backdrop-filter:blur(20px);
+			-webkit-backdrop-filter:blur(20px);
+			/* 超柔和的扩散阴影 */
+			box-shadow:0 10px 40px rgba(0,0,0,0.04);
+			/* 内部布局：flex column 布局，确保内容底部对齐 */
+			display:flex;
+			flex-direction:column;
+			/* 移除任何可能影响高度的硬编码值 */
+			/* Scroll Reveal 初始状态 */
+			opacity:0;
+			transform:translateY(30px);
+			/* 动画将在 JavaScript 中添加 visible 类时触发 */
+		}
+		
+		/* 当卡片进入可视区域时触发动画 */
+		.testimonial-card.revealed {
+			animation:appleReveal 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+		}
+		
+		/* 交错动画延迟 - Apple 风格波浪式出现 */
+		.testimonial-card.revealed.delay-1 {
+			animation-delay:100ms;
+		}
+		
+		.testimonial-card.revealed.delay-2 {
+			animation-delay:200ms;
+		}
+		
+		.testimonial-card.revealed.delay-3 {
+			animation-delay:300ms;
+		}
+		
+		/* 移除所有伪元素的 transform 干扰 */
+		.testimonial-card::before{
+			content:'';
+			position:absolute;
+			top:0;
+			left:0;
+			width:100%;
+			height:100%;
+			background:linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 100%);
+			opacity:0;
+			transition:opacity 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+			pointer-events:none;
+			transform:none;
+		}
+		
+		/* Apple 风格悬停效果：轻微提升，无缩放（仅在动画完成后生效） */
+		.testimonial-card.revealed:hover{
+			transform:translateY(-4px) !important; /* 轻微提升，不缩放 */
+			box-shadow:0 20px 60px rgba(0,0,0,0.08), 0 10px 40px rgba(0,0,0,0.06);
+			background:rgba(255, 255, 255, 0.95);
+		}
+		
+		.testimonial-card.revealed:active {
+			transform:translateY(-2px) !important; /* 轻微点击反馈 */
+			transition:transform 0.15s ease;
+		}
+		
+		.testimonial-card:hover::before{
+			opacity:1;
+		}
+		
+		.testimonial-quote{ 
+			font-size:20px; 
+			line-height:1.75; /* 增加行高，提升可读性 */
+			color:#1d1d1f; 
+			margin:0 0 24px; 
+			font-style:normal;
+			font-weight:400;
+			letter-spacing:-0.01em;
+			text-align:left; /* 左对齐，符合 Apple 风格 */
+			/* 占据剩余空间，确保作者信息始终在底部对齐 */
+			flex:1;
+			min-height:0; /* 允许 flex 子元素收缩 */
+		}
+		
+		.testimonial-author{ 
+			font-size:15px; 
+			color:rgba(0,0,0,0.65); 
+			font-weight:500;
+			margin-top:auto; /* 自动推到底部 */
+			margin-bottom:0;
+			letter-spacing:-0.01em;
+			text-align:left; /* 左对齐 */
+			/* 确保作者信息始终对齐在卡片最下方 */
+			flex-shrink:0;
+		}
+		
+		/* CTA Section */
+		.cta-section{ 
+			padding:120px 24px; /* 统一内边距 */
+			background:linear-gradient(180deg, #ffffff 0%, #fafafa 50%, #ffffff 100%); /* 微妙背景渐变 */
+			text-align:center;
+		}
+		
+		.cta-container{ 
+			max-width:800px; 
+			margin:0 auto;
+		}
+		
+		.cta-title{ 
+			font-size:clamp(40px, 6vw, 64px); 
+			font-weight:800; 
+			color:#000000; 
+			margin:0 0 24px; 
+			font-family:"Source Serif 4", serif;
+			letter-spacing:-0.03em;
+		}
+		
+		.cta-subtitle{ 
+			font-size:19px; 
+			color:rgba(0,0,0,0.6); 
+			margin:0 0 40px;
+			line-height:1.6;
+		}
+		
+		.cta-buttons{ 
+			display:flex; 
+			gap:16px; 
+			justify-content:center; 
+			flex-wrap:wrap;
+		}
+		
+		/* 平滑滚动 */
+		html{
+			scroll-behavior:smooth;
+		}
+		
+		/* 加载动画 */
+		@keyframes shimmer{
+			0%{ background-position:-1000px 0; }
+			100%{ background-position:1000px 0; }
+		}
+		
+		.loading-shimmer{
+			background:linear-gradient(90deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0.1) 100%);
+			background-size:1000px 100%;
+			animation:shimmer 2s infinite;
+		}
+		
+		/* 元素进入动画 */
+		.fade-in-up {
+			opacity: 0;
+			transform: translateY(40px);
+			transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+		}
+		
+		.fade-in-up.visible {
+			opacity: 1;
+			transform: translateY(0);
+		}
+		
+		.delay-1 { transition-delay: 0.1s; }
+		.delay-2 { transition-delay: 0.2s; }
+		.delay-3 { transition-delay: 0.3s; }
+		.delay-4 { transition-delay: 0.4s; }
+		
+		/* 滚动视差效果 */
+		.parallax-element {
+			transition: transform 0.3s ease-out;
+		}
+		
+		@media (max-width:768px){
+			.feature-panel-content{ 
+				grid-template-columns:1fr; 
+				gap:40px;
+			}
+			
+			.feature-panel-visual {
+				min-height:150px;
+				padding:20px;
+			}
+			
+			.audio-wave {
+				height:100px;
+			}
+			
+			.audio-wave-bar {
+				width:4px;
+			}
+			
+			.audio-wave-bar:nth-child(1) { height:15px; }
+			.audio-wave-bar:nth-child(2) { height:30px; }
+			.audio-wave-bar:nth-child(3) { height:45px; }
+			.audio-wave-bar:nth-child(4) { height:60px; }
+			.audio-wave-bar:nth-child(5) { height:75px; }
+			.audio-wave-bar:nth-child(6) { height:60px; }
+			.audio-wave-bar:nth-child(7) { height:45px; }
+			.audio-wave-bar:nth-child(8) { height:30px; }
+			.audio-wave-bar:nth-child(9) { height:15px; }
+			
+			.hand-svg-container {
+				width: 100px;
+				height: 100px;
+			}
+			
+			.hand-svg path {
+				stroke-width: 1.5;
+				stroke-dasharray: 4 2;
+			}
+			
+			.hand-scan-line {
+				height: 2px;
+			}
+			
+			.text-stream {
+				width: 120px;
+				height: 80px;
+			}
+			
+			.text-line {
+				height: 3px;
+			}
+			
+			.text-line::after {
+				width: 6px;
+				height: 6px;
+			}
+			.hero-section{ height:100vh; min-height:100vh }
+			.features-section, .stats-section, .testimonials-section, .cta-section{ 
+				padding:80px 20px; /* 优化移动端间距 */
+			}
+			.feature-panel{ padding:40px 32px }
+			.hero-title{ 
+				font-size:clamp(36px, 8vw, 64px);
+				margin-bottom: 40px; /* 移动端减少间距 */
+			}
+			.stat-card{ 
+				transform:none !important;
+				margin-bottom: 20px;
+			}
+			
+			/* 移动端 Bento Grid 改为单列 */
+			.testimonials-grid {
+				grid-template-columns:1fr;
+				gap:24px; /* 移动端也使用统一间距 */
+				grid-auto-rows:minmax(280px, auto); /* 移动端稍小的 min-height */
+			}
+			
+			.testimonial-card:nth-child(1) {
+				/* 移动端也移除跨行布局，确保等高 */
+			}
+			
+			.testimonial-card {
+				width:100%;
+				height:100%;
+				min-height:280px; /* 移动端统一的最小高度 */
+				max-height:none; /* 移除任何最大高度限制 */
+				padding:32px 24px; /* 移动端统一内边距 */
+				display:flex;
+				flex-direction:column;
+				/* 确保移动端动画正常 */
+				opacity:0;
+				transform:translateY(30px);
+			}
+			
+			.testimonial-card.revealed {
+				animation:appleReveal 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+			}
+			
+			.testimonial-quote {
+				font-size:18px;
+				line-height:1.7; /* 移动端也增加行高 */
+				margin-bottom:20px;
+				flex:1; /* 移动端也保持 flex 布局 */
+			}
+			
+			.testimonial-author {
+				flex-shrink:0; /* 移动端也确保作者信息在底部 */
+			}
+			
+			.stats-grid{
+				grid-template-columns:1fr;
+				gap:24px;
+			}
+			
+			.stats-header{
+				margin-bottom:60px;
+			}
+			
+			/* 移动端联系信息样式 */
+			.hero-contact-header{
+				flex-direction:column;
+				gap:16px;
+			}
+			
+			.hero-contact-info{
+				flex-direction:column;
+				gap:24px;
+			}
+			
+			.hero-contact-item{
+				padding:0;
+			}
+			
+			.hero-contact-item::after{
+				display:none;
+			}
+			
+			.hero-contact-item:not(:last-child)::after{
+				content:'';
+				position:absolute;
+				bottom:-12px;
+				left:50%;
+				transform:translateX(-50%);
+				width:40px;
+				height:1px;
+				background:rgba(10,10,10,0.2);
+			}
+		}
+		/* 黑白极简科技加载动画样式 */
+		/* 1. 主容器：纯黑背景 */
+		#mono-loader {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100vh;
+			background-color: #000000;
+			z-index: 2147483647; /* 确保最顶层 */
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			font-family: 'Space Mono', monospace;
+			color: #ffffff;
+			transform: translateY(0); /* 显式设置初始位置 */
+			
+			/* Adaline 同款丝滑上拉 */
+			transition: transform 1s cubic-bezier(0.77, 0, 0.175, 1);
+			transform-origin: top;
+		}
+
+		/* 2. 背景微弱网格（增加质感） */
+		.grid-bg {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background-image: 
+				linear-gradient(#1a1a1a 1px, transparent 1px),
+				linear-gradient(90deg, #1a1a1a 1px, transparent 1px);
+			background-size: 40px 40px;
+			opacity: 0.3;
+			pointer-events: none;
+		}
+
+		.mono-content {
+			position: relative;
+			width: 320px;
+			z-index: 2;
+		}
+
+		/* 3. 顶部小字 */
+		.top-status {
+			display: flex;
+			justify-content: space-between;
+			font-size: 0.75rem;
+			color: #666; /* 深灰色 */
+			margin-bottom: 20px;
+			border-bottom: 1px solid #333;
+			padding-bottom: 5px;
+		}
+
+		/* 4. 巨大数字 */
+		.hero-number-wrapper {
+			display: flex;
+			align-items: baseline;
+			line-height: 1;
+			margin-bottom: 10px;
+		}
+
+		.hero-number {
+			font-size: 6rem;
+			font-weight: 700;
+			letter-spacing: -4px;
+			color: #fff;
+		}
+
+		.hero-unit {
+			font-size: 1.5rem;
+			color: #444; /* 浅灰色单位 */
+			margin-left: 10px;
+			/* 防止布局偏移：固定尺寸 */
+			display: inline-block;
+			width: auto;
+			min-width: 0;
+			line-height: 1;
+			vertical-align: baseline;
+		}
+
+		/* 5. 数据流文字 */
+		.data-stream {
+			font-size: 0.85rem;
+			color: #888;
+			margin-bottom: 25px;
+			font-style: italic;
+			height: 20px; /* 防止抖动 */
+		}
+
+		.blinking-cursor {
+			color: #fff;
+			animation: blink 0.8s step-end infinite;
+		}
+
+		/* 6. 实体进度条 - 极简白条 */
+		.progress-track {
+			width: 100%;
+			height: 2px;
+			background: #222; /* 轨道颜色 */
+			position: relative;
+		}
+
+		#mono-bar {
+			width: 0%;
+			height: 100%;
+			background: #fff; /* 纯白进度 */
+			position: absolute;
+			top: 0;
+			left: 0;
+			transition: width 0.1s linear;
+		}
+
+		/* 7. 加载完成后的动作 - 向上飞出 */
+		body.loaded #mono-loader {
+			transform: translateY(-100%);
+		}
+
+		/* 简单的光标闪烁动画 */
+		@keyframes blink {
+			0%, 100% { opacity: 1; }
+			50% { opacity: 0; }
+		}
+	</style>
+</head>
+<body class="aw landing">
+	<!-- 黑白极简科技加载层 -->
+	<div id="mono-loader">
+		<!-- 背景网格装饰 -->
+		<div class="grid-bg"></div>
+		
+		<div class="mono-content">
+			<!-- 顶部状态栏 -->
+			<div class="top-status">
+				<span>// BOOT_SEQUENCE</span>
+				<span>SECURE_MODE</span>
+			</div>
+
+			<!-- 核心数字 -->
+			<div class="hero-number-wrapper">
+				<span class="hero-number" id="mono-counter">000</span>
+				<span class="hero-unit">%</span>
+			</div>
+
+			<!-- 装饰性数据流 -->
+			<div class="data-stream">
+				<span id="random-hex">0x00A4</span>
+				<span class="blinking-cursor">_</span>
+			</div>
+
+			<!-- 实体进度条 -->
+			<div class="progress-track">
+				<div id="mono-bar"></div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 主内容容器 -->
+	<div id="main-content">
+		{% include 'shared/header.html' %}
+		
+		<div class="landing-page">
+		<!-- Hero Section -->
+		<section class="hero-section" id="hero-section">
+			<div class="ripple-container" id="ripple-container">
+				<a-waves id="wavy-lines">
+					<svg class="js-svg"></svg>
+				</a-waves>
+			</div>
+			<div class="hero-content">
+				<!-- Contact me 头部 -->
+				<div class="hero-contact-header">
+					<span class="hero-contact-label">Contact me</span>
+					<div class="hero-social-icons">
+						<div class="hero-social-icon" title="Email"><i class="bi bi-envelope"></i></div>
+						<div class="hero-social-icon" title="QQ"><i class="bi bi-chat-dots"></i></div>
+						<div class="hero-social-icon" title="WeChat"><i class="bi bi-wechat"></i></div>
+						<div class="hero-social-icon" title="GitHub"><i class="bi bi-github"></i></div>
+						<div class="hero-social-icon" title="More"><i class="bi bi-plus-circle"></i></div>
+					</div>
+				</div>
+				
+				<!-- 主标题 -->
+				<h1 class="hero-title">LET THE DATA SPEAK AND DANCE</h1>
+				
+				<!-- 联系信息 -->
+				<div class="hero-contact-info">
+					<div class="hero-contact-item">
+						<div class="hero-contact-label-small">
+							<i class="bi bi-envelope"></i>
+							EMAIL
+						</div>
+						<div class="hero-contact-value">dxcsdsgzsl@163.com</div>
+					</div>
+					<div class="hero-contact-item">
+						<div class="hero-contact-label-small">
+							<i class="bi bi-bell"></i>
+							QQ GROUP
+						</div>
+						<div class="hero-contact-value">642675816</div>
+					</div>
+				</div>
+				
+				<!-- SAY HI 按钮 -->
+				<button class="hero-say-hi-btn">SAY HI</button>
+			</div>
+		</section>
+		
+		<!-- Features Tabs Section -->
+		<section class="features-section">
+			<div class="features-container">
+				<div class="features-header">
+					<h2 class="features-title">核心功能</h2>
+					<p class="features-subtitle">三个强大的模块，改变您的工作流程</p>
+				</div>
+				
+				<div class="features-tabs">
+					<button class="feature-tab active" data-tab="speech-text">
+						<span class="tab-number">01</span>
+						语音 ↔ 文字
+					</button>
+					<button class="feature-tab" data-tab="speech-sign">
+						<span class="tab-number">02</span>
+						语音 ↔ 手语
+					</button>
+					<button class="feature-tab" data-tab="sign-text">
+						<span class="tab-number">03</span>
+						手语 ↔ 文字
+					</button>
+				</div>
+				
+				<div class="feature-panel active" id="panel-speech-text">
+					<div class="feature-panel-content">
+						<div class="feature-panel-text">
+							<h3>语音转文字 & 文字转语音</h3>
+							<p>使用先进的 Whisper 模型，以高精度将语音转换为文字，或将文字转换为自然流畅的语音。完美适用于转录、语音助手和无障碍应用。</p>
+							<a class="btn" href="/whisper">立即体验</a>
+						</div>
+						<div class="feature-panel-visual">
+							<div class="audio-wave">
+								<div class="audio-wave-bar"></div>
+								<div class="audio-wave-bar"></div>
+								<div class="audio-wave-bar"></div>
+								<div class="audio-wave-bar"></div>
+								<div class="audio-wave-bar"></div>
+								<div class="audio-wave-bar"></div>
+								<div class="audio-wave-bar"></div>
+								<div class="audio-wave-bar"></div>
+								<div class="audio-wave-bar"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+				
+				<div class="feature-panel" id="panel-speech-sign">
+					<div class="feature-panel-content">
+						<div class="feature-panel-text">
+							<h3>语音转手语 & 手语转语音</h3>
+							<p>连接口语和手语之间的桥梁。将语音转换为手语动画，或将手语翻译回语音，实现无缝沟通。</p>
+							<a class="btn" href="/sign-language">即将推出</a>
+						</div>
+						<div class="feature-panel-visual">
+							<div class="hand-svg-container">
+								<svg class="hand-svg" viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+									<!-- 手掌轮廓 - 极简风格 -->
+									<path d="M 25 75 Q 25 65 30 60 Q 35 55 50 55 Q 65 55 70 60 Q 75 65 75 75 Q 75 80 70 82 Q 65 85 50 85 Q 35 85 30 82 Q 25 80 25 75" />
+									<!-- 拇指 -->
+									<path d="M 25 75 Q 20 70 18 65 Q 16 60 16 55 Q 16 50 18 48 Q 20 46 22 48 Q 24 50 25 54" />
+									<!-- 食指 -->
+									<path d="M 38 55 Q 38 45 38 35 Q 38 25 38 20 Q 38 18 39 17 Q 40 16 41 17 Q 42 18 42 20" />
+									<!-- 中指 -->
+									<path d="M 50 55 Q 50 42 50 28 Q 50 18 50 14 Q 50 12 51 11 Q 52 10 53 11 Q 54 12 54 14" />
+									<!-- 无名指 -->
+									<path d="M 62 55 Q 62 45 62 35 Q 62 25 62 20 Q 62 18 63 17 Q 64 16 65 17 Q 66 18 66 20" />
+									<!-- 小指 -->
+									<path d="M 70 60 Q 72 55 73 50 Q 74 45 74 42 Q 74 40 74.5 39 Q 75 38 75.5 39 Q 76 40 76 41" />
+									<!-- 手腕 -->
+									<path d="M 30 85 Q 35 90 50 90 Q 65 90 70 85 Q 70 88 68 92 Q 66 96 50 96 Q 34 96 32 92 Q 30 88 30 85" />
+								</svg>
+								<div class="hand-scan-line"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+				
+				<div class="feature-panel" id="panel-sign-text">
+					<div class="feature-panel-content">
+						<div class="feature-panel-text">
+							<h3>手语转文字 & 文字转手语</h3>
+							<p>将手语手势转换为书面文字，或将文字转换为手语动画。对于创建无障碍内容和沟通工具至关重要。</p>
+							<a class="btn" href="/sign-text">即将推出</a>
+						</div>
+						<div class="feature-panel-visual">
+							<div class="text-stream">
+								<div class="text-line" style="--target-width: 80%;"></div>
+								<div class="text-line" style="--target-width: 100%;"></div>
+								<div class="text-line" style="--target-width: 90%;"></div>
+								<div class="text-line" style="--target-width: 65%;"></div>
+								<div class="text-line" style="--target-width: 75%;"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+		
+		<!-- Stats Section -->
+		<section class="stats-section">
+			<div class="stats-container">
+				<div class="stats-header">
+					<h2 class="stats-title">精密设计，无与伦比的可靠性</h2>
+					<p class="stats-subtitle">YuNi 以卓越的性能和可靠性为工作流程提供动力。</p>
+				</div>
+				
+				<div class="stats-grid">
+					<div class="stat-card fade-in-up delay-1">
+						<div class="stat-number-wrapper">
+							<span class="stat-number" data-value="99" data-suffix="%+"></span>
+						</div>
+						<div class="stat-label">准确率</div>
+						<div class="stat-desc">行业领先的语音识别准确率</div>
+					</div>
+					<div class="stat-card fade-in-up delay-2">
+						<div class="stat-number-wrapper">
+							<span class="stat-number" data-value="99" data-suffix="+"></span>
+						</div>
+						<div class="stat-label">支持语言</div>
+						<div class="stat-desc">支持全球多种语言</div>
+					</div>
+					<div class="stat-card fade-in-up delay-3">
+						<div class="stat-number-wrapper">
+							<span class="stat-number" data-type="float" data-value="0.9" data-suffix="秒"></span>
+						</div>
+						<div class="stat-label">处理速度</div>
+						<div class="stat-desc">实时转录能力</div>
+					</div>
+					<div class="stat-card fade-in-up delay-4">
+						<div class="stat-number-wrapper">
+							<span class="stat-number" data-value="24" data-suffix="/7"></span>
+						</div>
+						<div class="stat-label">可用性</div>
+						<div class="stat-desc">始终在线，始终可靠</div>
+					</div>
+				</div>
+			</div>
+		</section>
+		
+		<!-- Testimonials Section -->
+		<section class="testimonials-section">
+			<div class="testimonials-container">
+				<div class="testimonials-header">
+					<h2 class="testimonials-title">为全球品牌和快速发展的初创企业提供动力</h2>
+					<p class="testimonials-subtitle">从雄心勃勃的初创企业到全球企业，YuNi 帮助团队快速迭代并自信地交付。</p>
+				</div>
+				
+				<div class="testimonials-grid">
+					<div class="testimonial-card delay-1">
+						<div class="testimonial-quote">"YuNi 改变了我们的工作流程。准确性和速度无与伦比。"</div>
+						<div class="testimonial-author">— 产品经理 @ TechCorp</div>
+					</div>
+					<div class="testimonial-card delay-2">
+						<div class="testimonial-quote">"我们使用过的最好的语音识别平台。强烈推荐。"</div>
+						<div class="testimonial-author">— 首席技术官 @ StartupXYZ</div>
+					</div>
+					<div class="testimonial-card delay-3">
+						<div class="testimonial-quote">"令人难以置信的准确性和易于集成。它确实有效。"</div>
+						<div class="testimonial-author">— 工程师 @ EnterpriseCo</div>
+					</div>
+				</div>
+			</div>
+		</section>
+		
+		<!-- CTA Section -->
+		<section class="cta-section">
+			<div class="cta-container">
+				<h2 class="cta-title">开启您的 YuNi 之旅</h2>
+				<p class="cta-subtitle">加入数千个正在构建语音识别未来的团队</p>
+				<div class="cta-buttons">
+					<a class="btn" href="/register">免费开始</a>
+					<a class="btn secondary" href="/whisper">观看演示</a>
+				</div>
+			</div>
+		</section>
+		</div>
+	</div>
+	
+	{% include 'shared/footer.html' %}
+	
+	<script>
+		// 应用白色背景主题
+		document.documentElement.setAttribute('data-theme','light');
+		document.body.style.background = '#ffffff';
+		
+		// 优化 LCP：字体加载完成后应用渐变效果（渐进增强）
+		if ('fonts' in document) {
+			document.fonts.ready.then(function() {
+				const heroTitle = document.querySelector('.hero-title');
+				if (heroTitle) {
+					heroTitle.classList.add('loaded');
+				}
+			});
+		} else {
+			// 降级方案：延迟添加 loaded 类
+			setTimeout(function() {
+				const heroTitle = document.querySelector('.hero-title');
+				if (heroTitle) {
+					heroTitle.classList.add('loaded');
+				}
+			}, 100);
+		}
+		
+		// 元素进入动画 - IntersectionObserver
+		const observerOptions = {
+			root: null,
+			rootMargin: '0px',
+			threshold: 0.1
+		};
+		
+		const observer = new IntersectionObserver((entries) => {
+			entries.forEach(entry => {
+				if (entry.isIntersecting) {
+					entry.target.classList.add('visible');
+					observer.unobserve(entry.target);
+				}
+			});
+		}, observerOptions);
+		
+		// 观察所有需要动画的元素
+		document.querySelectorAll('.fade-in-up').forEach(el => {
+			observer.observe(el);
+		});
+		
+		// Apple 风格 Scroll Reveal 动画 - 专门用于 testimonial-card
+		const testimonialObserverOptions = {
+			root: null,
+			rootMargin: '0px 0px -10% 0px', // 提前 10% 触发动画，更流畅
+			threshold: 0.15
+		};
+		
+		const testimonialObserver = new IntersectionObserver((entries) => {
+			entries.forEach(entry => {
+				if (entry.isIntersecting) {
+					// 添加 revealed 类触发动画
+					entry.target.classList.add('revealed');
+					testimonialObserver.unobserve(entry.target);
+				}
+			});
+		}, testimonialObserverOptions);
+		
+		// 观察所有 testimonial-card
+		document.querySelectorAll('.testimonial-card').forEach(card => {
+			testimonialObserver.observe(card);
+		});
+		
+		// 滚动视差效果 - 移除 stat-card 和 testimonial-card 避免布局问题
+		let lastScrollTop = 0;
+		const parallaxElements = document.querySelectorAll('.parallax-element, .hero-title');
+		
+		function handleParallax() {
+			const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+			const scrollDirection = scrollTop > lastScrollTop ? 'down' : 'up';
+			
+			parallaxElements.forEach((el, index) => {
+				const rect = el.getBoundingClientRect();
+				const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
+				
+				if (isVisible) {
+					const speed = 0.1 + (index % 3) * 0.05; // 不同元素不同速度
+					const yPos = -(scrollTop * speed);
+					el.style.transform = `translateY(${yPos}px)`;
+				}
+			});
+			
+			lastScrollTop = scrollTop;
+		}
+		
+		// 节流函数优化性能
+		let ticking = false;
+		function requestParallaxTick() {
+			if (!ticking) {
+				window.requestAnimationFrame(() => {
+					handleParallax();
+					ticking = false;
+				});
+				ticking = true;
+			}
+		}
+		
+		window.addEventListener('scroll', requestParallaxTick, { passive: true });
+		
+		// 功能标签页切换
+		document.querySelectorAll('.feature-tab').forEach(tab => {
+			tab.addEventListener('click', function() {
+				const targetTab = this.dataset.tab;
+				
+				document.querySelectorAll('.feature-tab').forEach(t => t.classList.remove('active'));
+				this.classList.add('active');
+				
+				document.querySelectorAll('.feature-panel').forEach(p => p.classList.remove('active'));
+				document.getElementById('panel-' + targetTab).classList.add('active');
+			});
+		});
+
+		// Adaline-style 数字滚动动画 - 支持大数字格式
+		const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
+		const easeOutQuad = t => t * (2 - t);
+		
+		function formatNumber(value, suffix = '') {
+			if (suffix.includes('M+') || suffix.includes('M')) {
+				return Math.floor(value) + 'M' + (suffix.includes('+') ? '+' : '');
+			}
+			if (suffix.includes('B+') || suffix.includes('B')) {
+				return value.toFixed(1) + 'B' + (suffix.includes('+') ? '+' : '');
+			}
+			if (suffix.includes('K+') || suffix.includes('K')) {
+				return Math.floor(value) + 'K' + (suffix.includes('+') ? '+' : '');
+			}
+			return value;
+		}
+		
+		function parseNumber(value, suffix = '') {
+			if (suffix.includes('M') || suffix.includes('B') || suffix.includes('K')) {
+				return parseFloat(value) * (suffix.includes('B') ? 1000000000 : suffix.includes('M') ? 1000000 : 1000);
+			}
+			return parseFloat(value);
+		}
+		
+		function animateNumber(element, targetValue, suffix = '', duration = 2000) {
+			const isFloat = element.dataset.type === 'float';
+			const hasLargeSuffix = suffix.includes('M') || suffix.includes('B') || suffix.includes('K');
+			
+			let startValue, endValue;
+			
+			if (hasLargeSuffix) {
+				startValue = 0;
+				endValue = parseNumber(targetValue, suffix);
+			} else if (isFloat) {
+				startValue = 0;
+				endValue = parseFloat(targetValue);
+			} else {
+				startValue = 0;
+				endValue = parseInt(targetValue);
+			}
+			
+			const startTime = performance.now();
+			
+			function frame(now) {
+				const elapsed = now - startTime;
+				const progress = Math.min(elapsed / duration, 1);
+				const eased = easeOutCubic(progress);
+				
+				const currentValue = startValue + (endValue - startValue) * eased;
+				
+				let displayValue;
+				if (hasLargeSuffix) {
+					const displayNum = suffix.includes('B') ? currentValue / 1000000000 : 
+					                  suffix.includes('M') ? currentValue / 1000000 : 
+					                  currentValue / 1000;
+					displayValue = formatNumber(displayNum, suffix);
+				} else if (isFloat) {
+					displayValue = currentValue.toFixed(1);
+				} else {
+					displayValue = Math.floor(currentValue);
+				}
+				
+				element.textContent = displayValue;
+				
+				if (progress < 1) {
+					requestAnimationFrame(frame);
+				} else {
+					if (hasLargeSuffix) {
+						element.textContent = formatNumber(parseNumber(targetValue, suffix) / (suffix.includes('B') ? 1000000000 : suffix.includes('M') ? 1000000 : 1000), suffix);
+					} else {
+						element.textContent = isFloat ? parseFloat(targetValue).toFixed(1) : targetValue;
+					}
+					if (suffix && !hasLargeSuffix && !element.nextElementSibling?.classList.contains('stat-number-suffix')) {
+						const suffixEl = document.createElement('span');
+						suffixEl.className = 'stat-number-suffix';
+						suffixEl.textContent = suffix;
+						element.parentElement.appendChild(suffixEl);
+					}
+				}
+			}
+			
+			requestAnimationFrame(frame);
+		}
+		
+		function runCounters() {
+			document.querySelectorAll('.stat-number').forEach(el => {
+				if (el.getAttribute('data-animated') === '1') return;
+				
+				const rect = el.getBoundingClientRect();
+				const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
+				
+				if (isVisible) {
+					el.setAttribute('data-animated', '1');
+					const value = el.dataset.value;
+					const suffix = el.dataset.suffix || '';
+					animateNumber(el, value, suffix, 2000);
+				}
+			});
+		}
+		
+		const statsObserverOptions = {
+			root: null,
+			rootMargin: '100px',
+			threshold: 0.1
+		};
+		
+		const statsObserver = new IntersectionObserver((entries) => {
+			entries.forEach(entry => {
+				if (entry.isIntersecting) {
+					runCounters();
+				}
+			});
+		}, statsObserverOptions);
+		
+		const statsSection = document.querySelector('.stats-section');
+		if (statsSection) {
+			statsObserver.observe(statsSection);
+		}
+		
+		runCounters();
+		
+		// 滚动淡入动画 - Adaline.ai 风格
+		const fadeInObserver = new IntersectionObserver((entries) => {
+			entries.forEach(entry => {
+				if (entry.isIntersecting) {
+					entry.target.classList.add('visible');
+				}
+			});
+		}, {
+			root: null,
+			rootMargin: '0px',
+			threshold: 0.1
+		});
+		
+		// 观察所有需要淡入的元素
+		document.querySelectorAll('.fade-in-up').forEach(el => {
+			fadeInObserver.observe(el);
+		});
+		
+		// SVG波浪线条效果实现 - 参照 CodePen wodniack/abeMZXQ
+		// 创建自定义元素类
+			class AWaves extends HTMLElement {
+				connectedCallback() {
+					this.svg = this.querySelector('.js-svg');
+					
+					if (!this.svg) {
+						console.error('SVG element not found');
+						return;
+					}
+					
+					this.mouse = {
+						x: -10,
+						y: 0,
+						lx: 0,
+						ly: 0,
+						sx: 0,
+						sy: 0,
+						v: 0,
+						vs: 0,
+						a: 0,
+						set: false,
+					};
+					
+					this.lines = [];
+					this.paths = [];
+					
+					// 使用全局加载状态管理，确保 Noise 库加载完成
+					if (typeof Noise !== 'undefined') {
+						// 库已加载，直接初始化
+						this.noise = new Noise(Math.random());
+						this.init();
+					} else {
+						// 等待库加载完成
+						if (window.NoiseLoadState) {
+							window.NoiseLoadState.onReady(() => {
+								if (typeof Noise !== 'undefined') {
+									this.noise = new Noise(Math.random());
+									this.init();
+								} else {
+									console.warn('Noise library still not available after ready callback');
+								}
+							});
+						} else {
+							// 降级方案：如果状态管理器不存在，使用轮询
+						const checkNoise = setInterval(() => {
+							if (typeof Noise !== 'undefined') {
+								clearInterval(checkNoise);
+								this.noise = new Noise(Math.random());
+								this.init();
+							}
+							}, 100);
+						setTimeout(() => {
+							clearInterval(checkNoise);
+							if (typeof Noise === 'undefined') {
+									console.warn('Noise library loading timeout, initializing with fallback');
+									// 使用降级方案
+									if (window.NoiseLoadState) {
+										window.NoiseLoadState.loadFallback();
+										if (typeof Noise !== 'undefined') {
+						this.noise = new Noise(Math.random());
+						this.init();
+										}
+									}
+								}
+							}, 15000);
+						}
+					}
+				}
+				
+				init() {
+					this.setSize();
+					this.setLines();
+					this.bindEvents();
+					this.bgDrawn = false; // 标记背景是否已绘制
+					requestAnimationFrame(this.tick.bind(this));
+				}
+				
+				bindEvents() {
+					window.addEventListener('resize', this.onResize.bind(this));
+					window.addEventListener('mousemove', this.onMouseMove.bind(this));
+					this.addEventListener('touchmove', this.onTouchMove.bind(this));
+				}
+				
+				onResize() {
+					this.setSize();
+					this.setLines();
+				}
+				
+				onMouseMove(e) {
+					this.updateMousePosition(e.pageX, e.pageY);
+				}
+				
+				onTouchMove(e) {
+					e.preventDefault();
+					const touch = e.touches[0];
+					this.updateMousePosition(touch.clientX, touch.clientY);
+				}
+				
+				updateMousePosition(x, y) {
+					const { mouse } = this;
+					mouse.x = x - this.bounding.left;
+					mouse.y = y - this.bounding.top + window.scrollY;
+					
+					if (!mouse.set) {
+						mouse.sx = mouse.x;
+						mouse.sy = mouse.y;
+						mouse.lx = mouse.x;
+						mouse.ly = mouse.y;
+						mouse.set = true;
+					}
+				}
+				
+				setSize() {
+					this.bounding = this.getBoundingClientRect();
+					this.svg.style.width = `${this.bounding.width}px`;
+					this.svg.style.height = `${this.bounding.height}px`;
+					this.svg.setAttribute('viewBox', `0 0 ${this.bounding.width} ${this.bounding.height}`);
+				}
+				
+				setLines() {
+					const { width, height } = this.bounding;
+					this.lines = [];
+					
+					this.paths.forEach((path) => path.remove());
+					this.paths = [];
+					
+					const xGap = 10;
+					const yGap = 32;
+					const oWidth = width + 200;
+					const oHeight = height + 30;
+					const totalLines = Math.ceil(oWidth / xGap);
+					const totalPoints = Math.ceil(oHeight / yGap);
+					const xStart = (width - xGap * totalLines) / 2;
+					const yStart = (height - yGap * totalPoints) / 2;
+					
+					for (let i = 0; i <= totalLines; i++) {
+						const points = [];
+						for (let j = 0; j <= totalPoints; j++) {
+							points.push({
+								x: xStart + xGap * i,
+								y: yStart + yGap * j,
+								wave: { x: 0, y: 0 },
+								cursor: { x: 0, y: 0, vx: 0, vy: 0 },
+							});
+						}
+						
+						const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+						path.classList.add('a__line', 'js-line');
+						this.svg.appendChild(path);
+						this.paths.push(path);
+						this.lines.push(points);
+					}
+				}
+				
+				movePoints(time) {
+					const { lines, mouse, noise } = this;
+					
+					lines.forEach((points) => {
+						points.forEach((p) => {
+							// Wave movement
+							const move = noise.perlin2(
+								(p.x + time * 0.0125) * 0.002,
+								(p.y + time * 0.005) * 0.0015
+							) * 12;
+							p.wave.x = Math.cos(move) * 32;
+							p.wave.y = Math.sin(move) * 16;
+							
+							// Mouse effect
+							const dx = p.x - mouse.sx;
+							const dy = p.y - mouse.sy;
+							const d = Math.hypot(dx, dy);
+							const l = Math.max(175, mouse.vs);
+							
+							if (d < l) {
+								const s = 1 - d / l;
+								const f = Math.cos(d * 0.001) * s;
+								p.cursor.vx += Math.cos(mouse.a) * f * l * mouse.vs * 0.00065;
+								p.cursor.vy += Math.sin(mouse.a) * f * l * mouse.vs * 0.00065;
+							}
+							
+							p.cursor.vx += (0 - p.cursor.x) * 0.005;
+							p.cursor.vy += (0 - p.cursor.y) * 0.005;
+							p.cursor.vx *= 0.925;
+							p.cursor.vy *= 0.925;
+							p.cursor.x += p.cursor.vx * 2;
+							p.cursor.y += p.cursor.vy * 2;
+							p.cursor.x = Math.min(100, Math.max(-100, p.cursor.x));
+							p.cursor.y = Math.min(100, Math.max(-100, p.cursor.y));
+						});
+					});
+				}
+				
+				moved(point, withCursorForce = true) {
+					const coords = {
+						x: point.x + point.wave.x + (withCursorForce ? point.cursor.x : 0),
+						y: point.y + point.wave.y + (withCursorForce ? point.cursor.y : 0),
+					};
+					coords.x = Math.round(coords.x * 10) / 10;
+					coords.y = Math.round(coords.y * 10) / 10;
+					return coords;
+				}
+				
+				drawLines() {
+					const { lines, paths } = this;
+					
+					lines.forEach((points, lIndex) => {
+						let p1 = this.moved(points[0], false);
+						let d = `M ${p1.x} ${p1.y}`;
+						
+						points.forEach((p1, pIndex) => {
+							const isLast = pIndex === points.length - 1;
+							p1 = this.moved(p1, !isLast);
+							const p2 = this.moved(
+								points[pIndex + 1] || points[points.length - 1],
+								!isLast
+							);
+							d += `L ${p1.x} ${p1.y}`;
+						});
+						
+						paths[lIndex].setAttribute('d', d);
+					});
+					
+					// 第一次绘制完成后派发 bg-ready 事件
+					if (!this.bgDrawn && lines.length > 0 && paths.length > 0) {
+						this.bgDrawn = true;
+						// 使用 setTimeout 确保 DOM 更新完成后再派发事件
+						setTimeout(() => {
+							const bgReadyEvent = new CustomEvent('bg-ready', {
+								bubbles: true,
+								cancelable: true
+							});
+							window.dispatchEvent(bgReadyEvent);
+						}, 0);
+					}
+				}
+				
+				tick(time) {
+					const { mouse } = this;
+					
+					mouse.sx += (mouse.x - mouse.sx) * 0.1;
+					mouse.sy += (mouse.y - mouse.sy) * 0.1;
+					
+					const dx = mouse.x - mouse.lx;
+					const dy = mouse.y - mouse.ly;
+					const d = Math.hypot(dx, dy);
+					
+					mouse.v = d;
+					mouse.vs += (d - mouse.vs) * 0.1;
+					mouse.vs = Math.min(100, mouse.vs);
+					
+					mouse.lx = mouse.x;
+					mouse.ly = mouse.y;
+					mouse.a = Math.atan2(dy, dx);
+					
+					this.style.setProperty('--x', `${mouse.sx}px`);
+					this.style.setProperty('--y', `${mouse.sy}px`);
+					
+					this.movePoints(time);
+					this.drawLines();
+					
+					requestAnimationFrame(this.tick.bind(this));
+				}
+			}
+			
+		// 注册自定义元素
+		if (!customElements.get('a-waves')) {
+			customElements.define('a-waves', AWaves);
+		}
+		
+		// 全局 Noise 库加载状态管理
+		window.NoiseLoadState = {
+			loading: false,
+			loaded: false,
+			callbacks: [],
+			init: function() {
+				if (this.loaded || typeof Noise !== 'undefined') {
+					this.loaded = true;
+					this.notifyAll();
+					return;
+				}
+				
+				if (this.loading) {
+					return; // 已经在加载中
+				}
+				
+			this.loading = true;
+			
+			// 直接使用本地 Perlin Noise 实现（避免 CDN CORS 问题）
+			// 本地实现性能更好，无网络延迟，无 CORS 错误
+			this.loadFallback();
+			},
+			
+		loadFallback: function() {
+			// 完整的 Perlin Noise 降级实现
+			if (typeof Noise === 'undefined') {
+				// 简化的 Perlin Noise 实现
+				window.Noise = function(seed) {
+					this.seed = seed || Math.random() * 1000;
+					// 使用固定的排列表（Perlin Noise 标准实现）
+					const p = [151,160,137,91,90,15,131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,8,99,37,240,21,10,23,190,6,148,247,120,234,75,0,26,197,62,94,252,219,203,117,35,11,32,57,177,33,88,237,149,56,87,174,20,125,136,171,168,68,175,74,165,71,134,139,48,27,166,77,146,158,231,83,111,229,122,60,211,133,230,220,105,92,41,55,46,245,40,244,102,143,54,65,25,63,161,1,216,80,73,209,76,132,187,208,89,18,169,200,196,135,130,116,188,159,86,164,100,109,198,173,186,3,64,52,217,226,250,124,123,5,202,38,147,118,126,255,82,85,212,207,206,59,227,47,16,58,17,182,189,28,42,223,183,170,213,119,248,152,2,44,154,163,70,221,153,101,155,167,43,172,9,129,22,39,253,19,98,108,110,79,113,224,232,178,185,112,104,218,246,97,228,251,34,242,193,238,210,144,12,191,179,162,241,81,51,145,235,249,14,239,107,49,192,214,31,181,199,106,157,184,84,204,176,115,121,50,45,127,4,150,254,138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180];
+					this.perm = [];
+					for (let i = 0; i < 512; i++) {
+						this.perm[i] = p[i % 256];
+					}
+				};
+				
+				// 实现 perlin2 方法（2D Perlin Noise）
+				Noise.prototype.perlin2 = function(x, y) {
+					const X = Math.floor(x) & 255;
+					const Y = Math.floor(y) & 255;
+					const xf = x - Math.floor(x);
+					const yf = y - Math.floor(y);
+					
+					const u = this.fade(xf);
+					const v = this.fade(yf);
+					
+					const a = this.perm[X] + Y;
+					const aa = this.perm[a];
+					const ab = this.perm[a + 1];
+					const b = this.perm[X + 1] + Y;
+					const ba = this.perm[b];
+					const bb = this.perm[b + 1];
+					
+					return this.lerp(v,
+						this.lerp(u,
+							this.grad(this.perm[aa], xf, yf),
+							this.grad(this.perm[ba], xf - 1, yf)
+						),
+						this.lerp(u,
+							this.grad(this.perm[ab], xf, yf - 1),
+							this.grad(this.perm[bb], xf - 1, yf - 1)
+						)
+					);
+				};
+				
+				// 辅助函数
+				Noise.prototype.fade = function(t) {
+					return t * t * t * (t * (t * 6 - 15) + 10);
+				};
+				
+				Noise.prototype.lerp = function(t, a, b) {
+					return a + t * (b - a);
+				};
+				
+				Noise.prototype.grad = function(hash, x, y) {
+					const h = hash & 3;
+					const u = h < 2 ? x : y;
+					const v = h < 2 ? y : x;
+					return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v);
+				};
+				
+				// 为了兼容性，也提供 noise2D 方法
+				Noise.prototype.noise2D = function(x, y) {
+					return this.perlin2(x, y);
+				};
+				
+				this.loaded = true;
+				this.notifyAll();
+			}
+		},
+			
+			onReady: function(callback) {
+				if (this.loaded || typeof Noise !== 'undefined') {
+					callback();
+				} else {
+					this.callbacks.push(callback);
+					if (!this.loading) {
+						this.init();
+					}
+				}
+			},
+			
+			notifyAll: function() {
+				this.callbacks.forEach(cb => {
+					try {
+						cb();
+					} catch (e) {
+						console.error('Error in Noise ready callback:', e);
+					}
+				});
+				this.callbacks = [];
+			}
+		};
+		
+		// 加载Noise库并初始化
+		function initWavyLines() {
+			const wavesElement = document.getElementById('wavy-lines');
+			if (!wavesElement) {
+				console.error('a-waves element not found');
+				return;
+			}
+			
+			// 确保 Noise 库加载完成后再继续
+			window.NoiseLoadState.onReady(() => {
+				// 库已加载，可以安全初始化
+			});
+		}
+		
+		// DOM加载完成后立即开始加载 Noise 库
+		if (document.readyState === 'loading') {
+			document.addEventListener('DOMContentLoaded', () => {
+				window.NoiseLoadState.init();
+				initWavyLines();
+			});
+		} else {
+			window.NoiseLoadState.init();
+			initWavyLines();
+		}
+		
+		
+		// 优化滚动动画性能 - Adaline.ai 风格
+		let lastKnownScrollPosition = 0;
+		let scrollTicking = false;
+		
+		function onScroll() {
+			lastKnownScrollPosition = window.scrollY;
+			
+			if (!scrollTicking) {
+				window.requestAnimationFrame(() => {
+					// 触发所有滚动相关的动画更新
+					scrollTicking = false;
+				});
+				scrollTicking = true;
+			}
+		}
+		
+		window.addEventListener('scroll', onScroll, { passive: true });
+	</script>
+	
+	<!-- 黑白极简科技加载动画 JavaScript -->
+	<script>
+		document.addEventListener("DOMContentLoaded", function() {
+			const counter = document.getElementById("mono-counter");
+			const bar = document.getElementById("mono-bar");
+			const hexDisplay = document.getElementById("random-hex");
+			
+			let current = 0;
+			let resourcesLoaded = false; // window.onload 状态
+			let bgReady = false; // 背景绘制完成状态
+			let progressComplete = false; // 进度条到100%状态
+
+			// 生成随机 Hex 代码装饰
+			function generateHex() {
+				return '0x' + Math.floor(Math.random()*16777215).toString(16).toUpperCase().padStart(6, '0');
+			}
+
+			// 检查是否可以完成加载（需要同时满足三个条件）
+			function checkCanFinish() {
+				if (resourcesLoaded && bgReady && progressComplete) {
+					finishLoading();
+				}
+			}
+
+			// 监听 window.onload 事件
+			if (document.readyState === 'complete') {
+				resourcesLoaded = true;
+				checkCanFinish();
+			} else {
+				window.addEventListener('load', function() {
+					resourcesLoaded = true;
+					checkCanFinish();
+				});
+			}
+
+			// 监听 bg-ready 事件（背景绘制完成）
+			window.addEventListener('bg-ready', function() {
+				bgReady = true;
+				checkCanFinish();
+			});
+
+			function updateLoader() {
+				// 随机增量（减小增量，让进度更慢）
+				const increment = Math.floor(Math.random() * 4) + 1;
+				current += increment;
+
+				// 限制最大 100
+				if (current > 100) current = 100;
+
+				// 更新 UI
+				// padStart(3, '0') 保证数字是 005, 042, 100 这种对齐格式
+				counter.textContent = current.toString().padStart(3, '0');
+				bar.style.width = current + "%";
+				
+				// 每次更新都变一下 Hex 代码
+				hexDisplay.textContent = "MEM_ADDR: " + generateHex();
+
+				if (current < 100) {
+					// 增加延迟时间，让读条更慢（从 10-40ms 增加到 50-150ms）
+					const delay = Math.random() * 100 + 50;
+					setTimeout(updateLoader, delay);
+				} else {
+					// 进度条到100%
+					progressComplete = true;
+					checkCanFinish();
+				}
+			}
+
+			function finishLoading() {
+				hexDisplay.textContent = "SYSTEM_READY";
+				hexDisplay.style.color = "#fff"; // 完成后变白
+				
+				// 延迟400ms后向上飞出
+				setTimeout(() => {
+					document.body.classList.add("loaded");
+				}, 400);
+			}
+
+			// 启动进度条
+			updateLoader();
+		});
+	</script>
+</body>
+</html>

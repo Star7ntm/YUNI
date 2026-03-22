@@ -1,0 +1,166 @@
+{% extends 'app/account_base.html' %}
+{% block content %}
+<style>
+	.account-newsletter-list {
+		max-width: 600px;
+	}
+	
+	.account-newsletter-item {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 16px 0;
+		border-bottom: 1px solid #E5E5E5;
+	}
+	
+	.account-newsletter-item:last-child {
+		border-bottom: none;
+	}
+	
+	.account-newsletter-item-content {
+		flex: 1;
+	}
+	
+	.account-newsletter-item-title {
+		font-size: 15px;
+		font-weight: 500;
+		color: #000;
+		margin-bottom: 4px;
+	}
+	
+	.account-newsletter-item-desc {
+		font-size: 13px;
+		color: #888;
+		line-height: 1.4;
+	}
+	
+	/* iOS 风格开关 */
+	.account-toggle-switch {
+		position: relative;
+		width: 51px;
+		height: 31px;
+		flex-shrink: 0;
+	}
+	
+	.account-toggle-switch input {
+		opacity: 0;
+		width: 0;
+		height: 0;
+	}
+	
+	.account-toggle-slider {
+		position: absolute;
+		cursor: pointer;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background-color: #E5E5E5;
+		transition: 0.3s;
+		border-radius: 31px;
+	}
+	
+	.account-toggle-slider:before {
+		position: absolute;
+		content: "";
+		height: 27px;
+		width: 27px;
+		left: 2px;
+		bottom: 2px;
+		background-color: white;
+		transition: 0.3s;
+		border-radius: 50%;
+		box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+	}
+	
+	.account-toggle-switch input:checked + .account-toggle-slider {
+		background-color: #34C759;
+	}
+	
+	.account-toggle-switch input:checked + .account-toggle-slider:before {
+		transform: translateX(20px);
+	}
+	
+	.account-toggle-switch input:focus + .account-toggle-slider {
+		box-shadow: 0 0 0 3px rgba(52, 199, 89, 0.2);
+	}
+</style>
+
+<div class="account-newsletter-list">
+	<div class="account-newsletter-item">
+		<div class="account-newsletter-item-content">
+			<div class="account-newsletter-item-title">产品更新通知</div>
+			<div class="account-newsletter-item-desc">接收产品功能更新和新特性通知</div>
+		</div>
+		<label class="account-toggle-switch">
+			<input type="checkbox" id="productUpdates" checked />
+			<span class="account-toggle-slider"></span>
+		</label>
+	</div>
+	
+	<div class="account-newsletter-item">
+		<div class="account-newsletter-item-content">
+			<div class="account-newsletter-item-title">每周摘要</div>
+			<div class="account-newsletter-item-desc">每周收到一次使用情况摘要和最佳实践</div>
+		</div>
+		<label class="account-toggle-switch">
+			<input type="checkbox" id="weeklyDigest" />
+			<span class="account-toggle-slider"></span>
+		</label>
+	</div>
+	
+	<div class="account-newsletter-item">
+		<div class="account-newsletter-item-content">
+			<div class="account-newsletter-item-title">营销邮件</div>
+			<div class="account-newsletter-item-desc">接收产品推广和营销活动信息</div>
+		</div>
+		<label class="account-toggle-switch">
+			<input type="checkbox" id="marketingEmails" />
+			<span class="account-toggle-slider"></span>
+		</label>
+	</div>
+</div>
+
+<script>
+(function() {
+	// 加载保存的设置
+	try {
+		const saved = localStorage.getItem('newsletter_settings');
+		if(saved) {
+			const settings = JSON.parse(saved);
+			if(document.getElementById('productUpdates')) {
+				document.getElementById('productUpdates').checked = settings.productUpdates !== false;
+			}
+			if(document.getElementById('weeklyDigest')) {
+				document.getElementById('weeklyDigest').checked = settings.weeklyDigest === true;
+			}
+			if(document.getElementById('marketingEmails')) {
+				document.getElementById('marketingEmails').checked = settings.marketingEmails === true;
+			}
+		}
+	} catch(e) {
+		console.error('加载设置失败:', e);
+	}
+	
+	// 保存设置
+	function saveSettings() {
+		const settings = {
+			productUpdates: document.getElementById('productUpdates')?.checked || false,
+			weeklyDigest: document.getElementById('weeklyDigest')?.checked || false,
+			marketingEmails: document.getElementById('marketingEmails')?.checked || false
+		};
+		localStorage.setItem('newsletter_settings', JSON.stringify(settings));
+		
+		// TODO: 调用 API 保存设置
+	}
+	
+	// 监听开关变化
+	['productUpdates', 'weeklyDigest', 'marketingEmails'].forEach(id => {
+		const el = document.getElementById(id);
+		if(el) {
+			el.addEventListener('change', saveSettings);
+		}
+	});
+})();
+</script>
+{% endblock %}

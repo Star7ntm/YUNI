@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="/static/styles.css">
+	<script src="/static/smooth-scroll.js" defer></script>
+	<!-- 禁用页面转场动画 -->
+	<script>
+		// 禁用 account 路由的页面转场动画
+		if (window.location.pathname.startsWith('/account')) {
+			sessionStorage.setItem('skip-page-transition', 'true');
+		}
+	</script>
+	<title>{{ title or '账户设置' }} - YuNi</title>
+	<style>
+		/* 全局重置 */
+		.account-page {
+			min-height: 100vh;
+			background: #F5F5F7;
+			font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+		}
+		
+		/* 顶部导航栏 */
+		.account-header {
+			background: #FFFFFF;
+			border-bottom: 1px solid #E5E5E5;
+			padding: 16px 40px;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+		}
+		
+		.account-header-user {
+			font-size: 14px;
+			color: #333;
+			font-weight: 500;
+		}
+		
+		.account-header-actions {
+			display: flex;
+			gap: 12px;
+		}
+		
+		.account-header-btn {
+			padding: 8px 16px;
+			border-radius: 8px;
+			font-size: 14px;
+			font-weight: 500;
+			cursor: pointer;
+			transition: all 0.2s;
+			border: none;
+			text-decoration: none;
+			display: inline-block;
+		}
+		
+		.account-header-btn-secondary {
+			background: transparent;
+			color: #333;
+			border: 1px solid #E5E5E5;
+		}
+		
+		.account-header-btn-secondary:hover {
+			background: #F5F5F5;
+		}
+		
+		.account-header-btn-primary {
+			background: #000000;
+			color: #FFFFFF;
+		}
+		
+		.account-header-btn-primary:hover {
+			background: #333333;
+		}
+		
+		/* 主容器 */
+		.account-container {
+			max-width: 1200px;
+			margin: 0 auto;
+			padding: 40px 24px;
+			display: grid;
+			grid-template-columns: 240px 1fr;
+			gap: 32px;
+		}
+		
+		@media (max-width: 980px) {
+			.account-container {
+				grid-template-columns: 1fr;
+				gap: 24px;
+			}
+		}
+		
+		/* 侧边栏 */
+		.account-sidebar {
+			position: sticky;
+			top: 24px;
+			height: fit-content;
+		}
+		
+		.account-sidebar-title {
+			font-size: 13px;
+			font-weight: 600;
+			color: #888;
+			text-transform: uppercase;
+			letter-spacing: 0.5px;
+			margin-bottom: 12px;
+			padding: 0 12px;
+		}
+		
+		.account-sidebar-nav {
+			display: flex;
+			flex-direction: column;
+			gap: 4px;
+		}
+		
+		.account-sidebar-item {
+			display: flex;
+			align-items: center;
+			gap: 12px;
+			padding: 10px 12px;
+			border-radius: 10px;
+			color: #000;
+			text-decoration: none;
+			font-size: 14px;
+			font-weight: 500;
+			transition: all 0.2s;
+			cursor: pointer;
+		}
+		
+		.account-sidebar-item:hover {
+			background: #F5F5F5;
+		}
+		
+		.account-sidebar-item.active {
+			background: #F5F5F5;
+			font-weight: 600;
+			color: #000;
+		}
+		
+		.account-sidebar-item.active svg {
+			stroke: #000;
+			stroke-width: 2;
+		}
+		
+		.account-sidebar-item svg {
+			width: 18px;
+			height: 18px;
+			flex-shrink: 0;
+			stroke: currentColor;
+			stroke-width: 1.5;
+		}
+		
+		/* 内容区 */
+		.account-content {
+			background: #FFFFFF;
+			border-radius: 24px;
+			box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+			padding: 40px;
+			min-height: fit-content;
+			height: fit-content;
+		}
+		
+		.account-content-title {
+			font-size: 32px;
+			font-weight: 700;
+			color: #000;
+			margin-bottom: 8px;
+			line-height: 1.2;
+		}
+		
+		.account-content-subtitle {
+			font-size: 15px;
+			color: #888;
+			margin-bottom: 32px;
+			line-height: 1.5;
+		}
+		
+		/* 移除背景效果 */
+		.account-page .aw-bg-orb {
+			display: none !important;
+		}
+	</style>
+	{% block extra_styles %}{% endblock %}
+</head>
+<body class="account-page">
+	<!-- 顶部导航栏 -->
+	<div class="account-header">
+		<div class="account-header-user">
+			当前用户：<span id="currentUser">未登录</span>
+		</div>
+		<div class="account-header-actions">
+			<a href="/main" class="account-header-btn account-header-btn-secondary">返回主页</a>
+			<button id="logoutBtn" class="account-header-btn account-header-btn-primary" type="button">退出登录</button>
+		</div>
+	</div>
+	
+	<!-- 主容器 -->
+	<div class="account-container">
+		<!-- 侧边栏 -->
+		<aside class="account-sidebar">
+			<div class="account-sidebar-title">账户</div>
+			<nav class="account-sidebar-nav">
+				<a href="/account" class="account-sidebar-item {% if active=='overview' %}active{% endif %}">
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+						<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+						<circle cx="12" cy="7" r="4"></circle>
+					</svg>
+					<span>概览</span>
+				</a>
+				<a href="/account/newsletter" class="account-sidebar-item {% if active=='newsletter' %}active{% endif %}">
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+						<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+						<polyline points="22,6 12,13 2,6"></polyline>
+					</svg>
+					<span>订阅 Newsletter</span>
+				</a>
+				<a href="/account/password" class="account-sidebar-item {% if active=='password' %}active{% endif %}">
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+						<rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+						<path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+					</svg>
+					<span>修改密码</span>
+				</a>
+				<a href="/account/profiles" class="account-sidebar-item {% if active=='profiles' %}active{% endif %}">
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+						<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+						<circle cx="12" cy="7" r="4"></circle>
+					</svg>
+					<span>个人资料</span>
+				</a>
+				<a href="/account/submissions" class="account-sidebar-item {% if active=='submissions' %}active{% endif %}">
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+						<line x1="8" y1="6" x2="21" y2="6"></line>
+						<line x1="8" y1="12" x2="21" y2="12"></line>
+						<line x1="8" y1="18" x2="21" y2="18"></line>
+						<line x1="3" y1="6" x2="3.01" y2="6"></line>
+						<line x1="3" y1="12" x2="3.01" y2="12"></line>
+						<line x1="3" y1="18" x2="3.01" y2="18"></line>
+					</svg>
+					<span>我的提交</span>
+				</a>
+				<a href="/account/cancel" class="account-sidebar-item {% if active=='cancel' %}active{% endif %}">
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+						<polyline points="3 6 5 6 21 6"></polyline>
+						<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+						<line x1="10" y1="11" x2="10" y2="17"></line>
+						<line x1="14" y1="11" x2="14" y2="17"></line>
+					</svg>
+					<span>注销账户</span>
+				</a>
+			</nav>
+		</aside>
+		
+		<!-- 内容区 -->
+		<main class="account-content">
+			<h1 class="account-content-title">{{ header or '账户设置' }}</h1>
+			{% if sub %}
+			<div class="account-content-subtitle">{{ sub }}</div>
+			{% endif %}
+			{% block content %}{% endblock %}
+		</main>
+	</div>
+	
+	<script>
+	// 强制使用浅色主题
+	document.documentElement.setAttribute('data-theme','light');
+	
+	// 设置当前用户
+	try {
+		const u = JSON.parse(localStorage.getItem('yuni_user') || 'null');
+		const currentUserEl = document.getElementById('currentUser');
+		if (currentUserEl) {
+			currentUserEl.textContent = (u && (u.username || u.name)) || '未登录';
+		}
+	} catch(e) {
+		console.error('获取用户信息失败:', e);
+	}
+	
+	// 退出登录
+	const logoutBtn = document.getElementById('logoutBtn');
+	if (logoutBtn) {
+		logoutBtn.addEventListener('click', function() {
+			localStorage.removeItem('yuni_user');
+			localStorage.removeItem('yuni_token');
+			window.location.href = '/login';
+		});
+	}
+	</script>
+	{% block extra_scripts %}{% endblock %}
+</body>
+</html>
+

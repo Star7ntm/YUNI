@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 800">
+	<defs>
+		<linearGradient id="sky" x1="0" x2="0" y1="0" y2="1">
+			<stop offset="0" stop-color="#e9efe6"/>
+			<stop offset="1" stop-color="#dfe7e1"/>
+		</linearGradient>
+		<linearGradient id="hill" x1="0" x2="1">
+			<stop offset="0" stop-color="#8cab88"/>
+			<stop offset="1" stop-color="#6e8f6c"/>
+		</linearGradient>
+		<linearGradient id="water" x1="0" x2="0" y1="0" y2="1">
+			<stop offset="0" stop-color="#bcd4c6"/>
+			<stop offset="1" stop-color="#9fbead"/>
+		</linearGradient>
+		<radialGradient id="sun" cx="0.5" cy="0.5">
+			<stop offset="0" stop-color="#fff9e6" stop-opacity="0.8"/>
+			<stop offset="1" stop-color="#fff9e6" stop-opacity="0"/>
+		</radialGradient>
+	</defs>
+	<rect width="1440" height="800" fill="url(#sky)"/>
+	<circle cx="200" cy="150" r="80" fill="url(#sun)"/>
+	<ellipse cx="720" cy="600" rx="600" ry="140" fill="url(#water)" opacity="0.85"/>
+	<path d="M0 480 C 200 380, 400 360, 600 420 C 800 480, 1000 420, 1200 450 C 1320 470, 1400 460, 1440 480 L 1440 800 L 0 800 Z" fill="url(#hill)"/>
+	<g fill="#2f4f2f" opacity=".85">
+		<circle cx="280" cy="480" r="28"/>
+		<rect x="272" y="480" width="16" height="60" rx="3"/>
+		<circle cx="1160" cy="490" r="32"/>
+		<rect x="1152" y="490" width="16" height="65" rx="3"/>
+		<circle cx="900" cy="500" r="24"/>
+		<rect x="892" y="500" width="16" height="55" rx="3"/>
+	</g>
+	<g fill="#4a6b4a" opacity=".6">
+		<circle cx="150" cy="450" r="12"/>
+		<circle cx="1300" cy="470" r="14"/>
+		<circle cx="500" cy="460" r="10"/>
+	</g>
+</svg>

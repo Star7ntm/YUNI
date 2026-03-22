@@ -1,0 +1,480 @@
+{% extends 'app/account_base.html' %}
+{% block content %}
+<style>
+	.account-profile-avatar-section {
+		display: flex;
+		align-items: center;
+		gap: 32px;
+		padding-bottom: 40px;
+		border-bottom: 1px solid #E5E5E5;
+		margin-bottom: 40px;
+	}
+	
+	.account-profile-avatar-preview {
+		width: 120px;
+		height: 120px;
+		border-radius: 50%;
+		background: #F5F5F7;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		overflow: hidden;
+		border: 2px solid #E5E5E5;
+		position: relative;
+	}
+	
+	.account-profile-avatar-preview img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+	
+	.account-profile-avatar-preview svg {
+		width: 60px;
+		height: 60px;
+		stroke: #888;
+	}
+	
+	.account-profile-avatar-edit {
+		position: absolute;
+		bottom: 0;
+		right: 0;
+		width: 36px;
+		height: 36px;
+		background: #000;
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+		transition: all 0.2s;
+		border: 3px solid #FFFFFF;
+	}
+	
+	.account-profile-avatar-edit:hover {
+		background: #333;
+		transform: scale(1.05);
+	}
+	
+	.account-profile-avatar-edit svg {
+		width: 18px;
+		height: 18px;
+		stroke: #FFFFFF;
+		stroke-width: 2;
+	}
+	
+	.account-profile-avatar-info {
+		flex: 1;
+	}
+	
+	.account-profile-avatar-info h3 {
+		font-size: 18px;
+		font-weight: 600;
+		color: #000;
+		margin-bottom: 8px;
+	}
+	
+	.account-profile-avatar-info p {
+		font-size: 14px;
+		color: #888;
+		margin-bottom: 12px;
+	}
+	
+	.account-profile-avatar-upload-btn {
+		padding: 8px 16px;
+		background: #000;
+		color: #FFFFFF;
+		border: none;
+		border-radius: 8px;
+		font-size: 14px;
+		font-weight: 500;
+		cursor: pointer;
+		transition: all 0.2s;
+	}
+	
+	.account-profile-avatar-upload-btn:hover {
+		background: #333;
+	}
+	
+	.account-profile-form {
+		max-width: 600px;
+	}
+	
+	.account-profile-form-group {
+		margin-bottom: 24px;
+	}
+	
+	.account-profile-form-label {
+		display: block;
+		font-size: 14px;
+		font-weight: 500;
+		color: #000;
+		margin-bottom: 8px;
+	}
+	
+	.account-profile-form-input {
+		width: 100%;
+		padding: 12px 16px;
+		background: #F5F5F7;
+		border: none;
+		border-radius: 10px;
+		font-size: 15px;
+		color: #000;
+		font-family: inherit;
+		transition: all 0.2s;
+		box-sizing: border-box;
+	}
+	
+	.account-profile-form-input:focus {
+		outline: none;
+		background: #EEEEEE;
+	}
+	
+	.account-profile-form-input::placeholder {
+		color: #888;
+	}
+	
+	.account-profile-form-textarea {
+		min-height: 120px;
+		resize: vertical;
+	}
+	
+	.account-profile-form-actions {
+		display: flex;
+		justify-content: flex-end;
+		gap: 12px;
+		margin-top: 32px;
+		padding-top: 32px;
+		border-top: 1px solid #E5E5E5;
+	}
+	
+	.account-profile-form-btn {
+		padding: 12px 24px;
+		border-radius: 12px;
+		font-size: 15px;
+		font-weight: 600;
+		cursor: pointer;
+		transition: all 0.2s;
+		border: none;
+	}
+	
+	.account-profile-form-btn-primary {
+		background: #000;
+		color: #FFFFFF;
+	}
+	
+	.account-profile-form-btn-primary:hover {
+		background: #333;
+	}
+	
+	.account-profile-form-btn-secondary {
+		background: transparent;
+		color: #333;
+		border: 1px solid #E5E5E5;
+	}
+	
+	.account-profile-form-btn-secondary:hover {
+		background: #F5F5F5;
+	}
+	
+	.account-profile-upload-progress {
+		display: none;
+		margin-top: 12px;
+		font-size: 14px;
+		color: #888;
+		font-weight: 500;
+	}
+	
+	.account-profile-upload-progress.error {
+		color: #ef4444;
+	}
+	
+	.account-profile-upload-progress.success {
+		color: #000;
+	}
+</style>
+
+<!-- 头像上传区域 -->
+<div class="account-profile-avatar-section">
+	<div class="account-profile-avatar-preview" id="avatarPreview">
+		<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+			<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+			<circle cx="12" cy="7" r="4"></circle>
+		</svg>
+		<img id="avatarImage" style="display:none;" />
+		<label for="avatarInput" class="account-profile-avatar-edit">
+			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+				<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+				<path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+			</svg>
+		</label>
+		<input type="file" id="avatarInput" accept="image/jpeg,image/jpg,image/png,image/gif,image/webp" style="display:none;" />
+	</div>
+	<div class="account-profile-avatar-info">
+		<h3>头像</h3>
+		<p>支持 JPG、PNG、GIF、WEBP 格式，最大 5MB</p>
+		<div class="account-profile-upload-progress" id="uploadProgress"></div>
+	</div>
+</div>
+
+<!-- 表单 -->
+<div class="account-profile-form">
+	<div class="account-profile-form-group">
+		<label class="account-profile-form-label">显示名称</label>
+		<input type="text" id="displayName" class="account-profile-form-input" placeholder="输入您的显示名称" />
+	</div>
+	
+	<div class="account-profile-form-group">
+		<label class="account-profile-form-label">Bio</label>
+		<textarea id="bio" class="account-profile-form-input account-profile-form-textarea" placeholder="介绍一下自己..."></textarea>
+	</div>
+	
+	<div class="account-profile-form-actions">
+		<button type="button" class="account-profile-form-btn account-profile-form-btn-secondary" onclick="resetForm()">重置</button>
+		<button type="button" class="account-profile-form-btn account-profile-form-btn-primary" onclick="saveProfile()">保存更改</button>
+	</div>
+</div>
+
+<script>
+(function(){
+	let currentUser = null;
+	try {
+		const userStr = localStorage.getItem('yuni_user');
+		if(userStr) currentUser = JSON.parse(userStr);
+	} catch(e) {
+		console.error('获取用户信息失败:', e);
+	}
+	
+	// 加载现有数据
+	function loadProfile() {
+		if(currentUser) {
+			if(document.getElementById('displayName')) {
+				document.getElementById('displayName').value = currentUser.displayName || currentUser.username || '';
+			}
+			if(document.getElementById('bio')) {
+				document.getElementById('bio').value = currentUser.bio || '';
+			}
+			
+			// 加载头像
+			if(currentUser.avatar) {
+				const img = document.getElementById('avatarImage');
+				if(img) {
+					img.src = currentUser.avatar;
+					img.style.display = 'block';
+					const svg = document.getElementById('avatarPreview').querySelector('svg');
+					if(svg) svg.style.display = 'none';
+					// 添加错误处理：图片加载失败时显示占位符
+					img.onerror = function() {
+						this.style.display = 'none';
+						const svg = document.getElementById('avatarPreview').querySelector('svg');
+						if(svg) svg.style.display = 'block';
+					};
+				}
+			}
+		}
+	}
+	loadProfile();
+	
+	// 头像上传
+	const avatarInput = document.getElementById('avatarInput');
+	const uploadProgress = document.getElementById('uploadProgress');
+	
+	if(avatarInput) {
+		avatarInput.addEventListener('change', async function(e) {
+			const file = e.target.files[0];
+			if(!file) return;
+			
+			// 清除旧的错误提示
+			if(uploadProgress) {
+				uploadProgress.style.display = 'none';
+				uploadProgress.textContent = '';
+				uploadProgress.style.color = '#888';
+			}
+			
+			const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+			if(!allowedTypes.includes(file.type)) {
+				alert('不支持的文件格式，请上传 JPG、PNG、GIF 或 WEBP 格式');
+				return;
+			}
+			
+			if(file.size > 5 * 1024 * 1024) {
+				alert('文件大小不能超过 5MB');
+				return;
+			}
+			
+			// 检查 Token
+			const token = localStorage.getItem('yuni_token');
+			
+			// 调试输出：确认 Token 是否被读取
+			console.log('[头像上传] Uploading with token:', token ? (token.substring(0, 20) + '...') : 'null');
+			console.log('[头像上传] Token 存在:', !!token);
+			console.log('[头像上传] Token 长度:', token ? token.length : 0);
+			
+			if(!token || token.trim() === '') {
+				if(uploadProgress) {
+					uploadProgress.style.display = 'block';
+					uploadProgress.textContent = '上传失败：登录已过期，请重新登录';
+					uploadProgress.style.color = '#ef4444';
+					uploadProgress.classList.add('error');
+				}
+				setTimeout(() => {
+					localStorage.removeItem('yuni_user');
+					localStorage.removeItem('yuni_token');
+					window.location.href = '/login';
+				}, 1500);
+				return;
+			}
+			
+			// 显示预览
+			const reader = new FileReader();
+			reader.onload = function(e) {
+				const img = document.getElementById('avatarImage');
+				if(img) {
+					img.src = e.target.result;
+					img.style.display = 'block';
+					const svg = document.getElementById('avatarPreview').querySelector('svg');
+					if(svg) svg.style.display = 'none';
+				}
+			};
+			reader.readAsDataURL(file);
+			
+			// 上传到服务器
+			if(uploadProgress) {
+				uploadProgress.style.display = 'block';
+				uploadProgress.textContent = '上传中...';
+				uploadProgress.style.color = '#888';
+				uploadProgress.classList.remove('error', 'success');
+			}
+			
+			const formData = new FormData();
+			formData.append('file', file);
+			
+			// 构建请求头（确保 Authorization header 正确设置）
+			// 重要：不要设置 Content-Type，让浏览器自动设置 multipart/form-data 边界
+			const headers = {
+				'Authorization': 'Bearer ' + token.trim()
+			};
+			
+			console.log('[头像上传] 请求头:', {
+				'Authorization': headers['Authorization'].substring(0, 20) + '...',
+				'Content-Type': '未设置（由浏览器自动设置）'
+			});
+			
+			try {
+				const response = await fetch('/api/upload_avatar', {
+					method: 'POST',
+					headers: headers,
+					body: formData
+				});
+				
+				console.log('[头像上传] 响应状态:', response.status, response.statusText);
+				
+				// 处理 401 未授权错误（在解析 JSON 之前检查）
+				if(response.status === 401) {
+					console.error('[头像上传] 401 未授权错误');
+					if(uploadProgress) {
+						uploadProgress.textContent = '上传失败：登录已过期，请重新登录';
+						uploadProgress.style.color = '#ef4444';
+						uploadProgress.classList.remove('success');
+						uploadProgress.classList.add('error');
+					}
+					// 仅当明确返回 401 时才清除本地存储并跳转
+					localStorage.removeItem('yuni_user');
+					localStorage.removeItem('yuni_token');
+					setTimeout(() => {
+						window.location.href = '/login';
+					}, 1500);
+					return;
+				}
+				
+				// 解析响应（可能包含错误信息）
+				let result;
+				try {
+					result = await response.json();
+				} catch(e) {
+					// 如果响应不是 JSON，尝试读取文本
+					const text = await response.text();
+					console.error('[头像上传] 响应解析失败:', text);
+					
+					// 非 JSON 响应，但状态码不是 401，只显示错误，不跳转
+					if(uploadProgress) {
+						uploadProgress.textContent = '上传失败：服务器响应格式错误';
+						uploadProgress.style.color = '#ef4444';
+						uploadProgress.classList.remove('success');
+						uploadProgress.classList.add('error');
+					}
+					return;
+				}
+				
+				if(response.ok) {
+					console.log('[头像上传] 上传成功');
+					if(uploadProgress) {
+						uploadProgress.textContent = '上传成功！';
+						uploadProgress.style.color = '#000';
+						uploadProgress.classList.remove('error');
+						uploadProgress.classList.add('success');
+					}
+					
+					if(result.user) {
+						currentUser = result.user;
+						localStorage.setItem('yuni_user', JSON.stringify(result.user));
+					}
+					
+					setTimeout(() => {
+						if(uploadProgress) {
+							uploadProgress.style.display = 'none';
+							uploadProgress.classList.remove('success');
+						}
+					}, 2000);
+				} else {
+					// 其他错误状态码（400, 500 等），只显示错误，不跳转
+					console.error('[头像上传] 上传失败:', response.status, result);
+					if(uploadProgress) {
+						const errorMsg = result.detail || result.message || '未知错误';
+						uploadProgress.textContent = '上传失败：' + errorMsg;
+						uploadProgress.style.color = '#ef4444';
+						uploadProgress.classList.remove('success');
+						uploadProgress.classList.add('error');
+					}
+				}
+			} catch(error) {
+				console.error('[头像上传] 请求异常:', error);
+				
+				// 检查是否是网络错误
+				if(error.name === 'TypeError' && error.message.includes('fetch')) {
+					// 网络错误，只显示错误，不跳转
+					if(uploadProgress) {
+						uploadProgress.textContent = '上传失败：网络错误，请检查网络连接';
+						uploadProgress.style.color = '#ef4444';
+						uploadProgress.classList.remove('success');
+						uploadProgress.classList.add('error');
+					}
+				} else {
+					// 其他异常，只显示错误，不跳转
+					if(uploadProgress) {
+						uploadProgress.textContent = '上传失败：' + (error.message || '未知错误');
+						uploadProgress.style.color = '#ef4444';
+						uploadProgress.classList.remove('success');
+						uploadProgress.classList.add('error');
+					}
+				}
+			}
+		});
+	}
+	
+	// 保存资料
+	window.saveProfile = function() {
+		const displayName = document.getElementById('displayName')?.value || '';
+		const bio = document.getElementById('bio')?.value || '';
+		
+		// TODO: 调用 API 保存资料
+		alert('资料已保存（示例）');
+	};
+	
+	// 重置表单
+	window.resetForm = function() {
+		loadProfile();
+	};
+})();
+</script>
+{% endblock %}

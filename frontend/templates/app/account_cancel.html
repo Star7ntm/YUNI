@@ -1,0 +1,176 @@
+{% extends 'app/account_base.html' %}
+{% block content %}
+<style>
+	.account-cancel-section {
+		max-width: 600px;
+	}
+	
+	.account-cancel-warning {
+		background: #FEF2F2;
+		border: 1px solid #FEE2E2;
+		border-radius: 12px;
+		padding: 24px;
+		margin-bottom: 32px;
+	}
+	
+	.account-cancel-warning-title {
+		font-size: 18px;
+		font-weight: 600;
+		color: #000;
+		margin-bottom: 12px;
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+	
+	.account-cancel-warning-title svg {
+		width: 20px;
+		height: 20px;
+		stroke: #ef4444;
+		flex-shrink: 0;
+	}
+	
+	.account-cancel-warning-text {
+		font-size: 14px;
+		color: #333;
+		line-height: 1.6;
+		margin-bottom: 0;
+	}
+	
+	.account-cancel-description {
+		font-size: 15px;
+		color: #888;
+		line-height: 1.6;
+		margin-bottom: 32px;
+	}
+	
+	.account-cancel-consequences {
+		background: #F5F5F7;
+		border-radius: 12px;
+		padding: 24px;
+		margin-bottom: 32px;
+	}
+	
+	.account-cancel-consequences-title {
+		font-size: 15px;
+		font-weight: 600;
+		color: #000;
+		margin-bottom: 16px;
+	}
+	
+	.account-cancel-consequences-list {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+	}
+	
+	.account-cancel-consequences-item {
+		font-size: 14px;
+		color: #333;
+		line-height: 1.6;
+		margin-bottom: 12px;
+		padding-left: 24px;
+		position: relative;
+	}
+	
+	.account-cancel-consequences-item:last-child {
+		margin-bottom: 0;
+	}
+	
+	.account-cancel-consequences-item::before {
+		content: '•';
+		position: absolute;
+		left: 0;
+		color: #888;
+		font-weight: bold;
+	}
+	
+	.account-cancel-actions {
+		display: flex;
+		justify-content: flex-end;
+		gap: 12px;
+		padding-top: 32px;
+		border-top: 1px solid #E5E5E5;
+	}
+	
+	.account-cancel-btn {
+		padding: 12px 24px;
+		border-radius: 12px;
+		font-size: 15px;
+		font-weight: 600;
+		cursor: pointer;
+		transition: all 0.2s;
+		border: none;
+	}
+	
+	.account-cancel-btn-danger {
+		background: transparent;
+		color: #ef4444;
+		border: 1px solid #ef4444;
+	}
+	
+	.account-cancel-btn-danger:hover {
+		background: #FEF2F2;
+	}
+	
+	.account-cancel-btn-secondary {
+		background: transparent;
+		color: #333;
+		border: 1px solid #E5E5E5;
+	}
+	
+	.account-cancel-btn-secondary:hover {
+		background: #F5F5F5;
+	}
+</style>
+
+<div class="account-cancel-section">
+	<div class="account-cancel-warning">
+		<div class="account-cancel-warning-title">
+			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+				<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+				<line x1="12" y1="9" x2="12" y2="13"></line>
+				<line x1="12" y1="17" x2="12.01" y2="17"></line>
+			</svg>
+			删除账户
+		</div>
+		<p class="account-cancel-warning-text">
+			此操作将永久删除您的账户和所有相关数据。此操作无法撤销。
+		</p>
+	</div>
+	
+	<div class="account-cancel-description">
+		删除账户后，您将无法恢复以下内容：
+	</div>
+	
+	<div class="account-cancel-consequences">
+		<div class="account-cancel-consequences-title">删除账户将导致：</div>
+		<ul class="account-cancel-consequences-list">
+			<li class="account-cancel-consequences-item">所有识别历史记录将被永久删除</li>
+			<li class="account-cancel-consequences-item">所有上传的音频文件将被删除</li>
+			<li class="account-cancel-consequences-item">您的个人资料和设置将被清除</li>
+			<li class="account-cancel-consequences-item">您将无法使用此账户登录</li>
+		</ul>
+	</div>
+	
+	<div class="account-cancel-actions">
+		<button type="button" class="account-cancel-btn account-cancel-btn-secondary" onclick="window.location.href='/account'">取消</button>
+		<button type="button" class="account-cancel-btn account-cancel-btn-danger" onclick="confirmDelete()">永久删除账户</button>
+	</div>
+</div>
+
+<script>
+function confirmDelete() {
+	const confirmed = confirm('您确定要永久删除账户吗？此操作无法撤销。\n\n请输入"DELETE"确认删除。');
+	if(confirmed) {
+		const input = prompt('请输入 "DELETE" 以确认删除账户：');
+		if(input === 'DELETE') {
+			// TODO: 调用 API 删除账户
+			alert('演示环境：未执行实际注销');
+		} else {
+			alert('确认失败，操作已取消');
+		}
+	}
+}
+</script>
+{% endblock %}

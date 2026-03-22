@@ -1,0 +1,3875 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="/static/styles.css">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Serif+4:wght@700;800&display=swap" rel="stylesheet">
+	<script src="/static/smooth-scroll.js" defer></script>
+	<script src="/static/page-transition.js" defer></script>
+	<!-- 页面转场覆盖层 - 立即创建，确保首次加载时可见 -->
+	<script>
+		(function() {
+			const isFirstLoad = !sessionStorage.getItem('page-transition-initialized');
+			const isFromTransition = sessionStorage.getItem('page-transition-pending') === 'true';
+			if (isFirstLoad || isFromTransition) {
+				const overlay = document.createElement('div');
+				overlay.id = 'page-transition-overlay-inline';
+				overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#ffffff 0%,#f8f9fa 50%,#f1f3f5 100%);z-index:99999;opacity:1;pointer-events:auto;transition:transform 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94);will-change:transform;backface-visibility:hidden;-webkit-backface-visibility:hidden;transform:translateY(0) translateZ(0);';
+				document.documentElement.insertBefore(overlay, document.body || document.documentElement.firstChild);
+			}
+		})();
+	</script>
+	<!-- Three.js 3D库 - 使用ES Modules（推荐方式） -->
+	<!-- 使用importmap支持ES模块 -->
+	<script type="importmap">
+		{
+			"imports": {
+				"three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+				"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+			}
+		}
+	</script>
+	<!-- 全局函数定义（必须在head中，确保onclick可以访问） -->
+	<script>
+		// 全局函数定义（必须在立即执行函数之前，确保onclick可以访问）
+		window.openUploadModal = function() {
+			console.log('[上传] ========== openUploadModal 被调用 ==========');
+			const modal = document.getElementById('uploadModal');
+			console.log('[上传] 找到模态框:', modal);
+			if (modal) {
+				modal.classList.add('active');
+				console.log('[上传] 模态框已添加active类，当前类:', modal.className);
+				console.log('[上传] 模态框display样式:', window.getComputedStyle(modal).display);
+				console.log('[上传] 模态框z-index:', window.getComputedStyle(modal).zIndex);
+				
+				// 确保模态框可见（双重保险）
+				modal.style.display = 'flex';
+			} else {
+				console.error('[上传] 未找到上传模态框元素');
+				alert('无法打开上传对话框，请刷新页面重试');
+			}
+		};
+		
+	window.closeUploadModal = function() {
+		console.log('[上传] closeUploadModal 被调用');
+		const modal = document.getElementById('uploadModal');
+		if (modal) {
+			modal.classList.remove('active');
+			modal.style.display = 'none'; // 确保隐藏
+		}
+		// 重置上传状态
+		const fileInput = document.getElementById('fileInput');
+		const uploadArea = document.getElementById('uploadArea');
+		const uploadProgress = document.getElementById('uploadProgress');
+		const progressFill = document.getElementById('progressFill');
+		const progressText = document.getElementById('progressText');
+		const confirmSection = document.getElementById('confirmUploadSection');
+		const modelNameInput = document.getElementById('modelNameInput');
+		
+		if (fileInput) fileInput.value = '';
+		if (uploadArea) uploadArea.style.display = 'block';
+		if (uploadProgress) {
+			uploadProgress.classList.remove('active');
+			uploadProgress.style.display = 'none';
+		}
+		if (progressFill) {
+			progressFill.style.width = '0%';
+			progressFill.style.background = '';
+		}
+		if (progressText) {
+			progressText.textContent = '上传中...';
+			progressText.style.color = '';
+		}
+		if (confirmSection) confirmSection.style.display = 'none';
+		if (modelNameInput) modelNameInput.value = '';
+	};
+	
+	window.cancelUpload = function() {
+		console.log('[上传] 取消上传');
+		closeUploadModal();
+	};
+	
+	window.confirmUpload = function() {
+		console.log('[上传] 确认保存模型');
+		// 这个函数会在立即执行函数内部重新定义
+		if (window._confirmUpload) {
+			return window._confirmUpload();
+		}
+		alert('功能正在加载中，请稍候...');
+	};
+		
+		window.deleteCurrentModel = function() {
+			console.log('[模型管理] ========== deleteCurrentModel 被调用 ==========');
+			// 这个函数会在立即执行函数内部重新定义，这里先提供一个占位符
+			if (window._deleteCurrentModel) {
+				return window._deleteCurrentModel();
+			}
+			alert('功能正在加载中，请稍候...');
+		};
+		
+		window.toggleFullscreen = function() {
+			if (window._toggleFullscreen) {
+				return window._toggleFullscreen();
+			}
+			alert('功能正在加载中，请稍候...');
+		};
+		
+		window.toggleSettingsPanel = function() {
+			if (window._toggleSettingsPanel) {
+				return window._toggleSettingsPanel();
+			}
+			const panel = document.getElementById('settingsPanel');
+			if (panel) {
+				panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+			}
+		};
+		
+		window.updateBackgroundColor = function(color) {
+			if (window._updateBackgroundColor) {
+				return window._updateBackgroundColor(color);
+			}
+		};
+		
+		window.updateAmbientColor = function(color) {
+			if (window._updateAmbientColor) {
+				return window._updateAmbientColor(color);
+			}
+		};
+		
+		window.updateAmbientBrightness = function(value) {
+			if (window._updateAmbientBrightness) {
+				return window._updateAmbientBrightness(value);
+			}
+		};
+	</script>
+	
+	<!-- 异步加载Three.js模块 -->
+	<script type="module">
+		(async function() {
+			try {
+				// 动态导入ES模块 - 导入THREE核心库和所有加载器
+				const THREE_MODULE = await import('three');
+				// THREE模块导出的是一个命名空间对象，需要解构或直接使用
+				const THREE = THREE_MODULE.default || THREE_MODULE;
+				
+				const { GLTFLoader } = await import('three/addons/loaders/GLTFLoader.js');
+				const { OrbitControls } = await import('three/addons/controls/OrbitControls.js');
+				const { OBJLoader } = await import('three/addons/loaders/OBJLoader.js');
+				const { FBXLoader } = await import('three/addons/loaders/FBXLoader.js');
+				const { STLLoader } = await import('three/addons/loaders/STLLoader.js');
+				const { PLYLoader } = await import('three/addons/loaders/PLYLoader.js');
+				const { ColladaLoader } = await import('three/addons/loaders/ColladaLoader.js');
+				
+				// 将THREE挂载到全局对象，供非模块代码使用
+				window.THREE = THREE;
+				
+				// 将加载器挂载到全局对象，供非模块代码使用
+				window.THREE_LOADERS = {
+					GLTFLoader: GLTFLoader,
+					OrbitControls: OrbitControls,
+					OBJLoader: OBJLoader,
+					FBXLoader: FBXLoader,
+					STLLoader: STLLoader,
+					PLYLoader: PLYLoader,
+					ColladaLoader: ColladaLoader
+				};
+				
+				console.log('[Three.js] ES模块加载成功', {
+					THREE: typeof THREE !== 'undefined' ? '已加载' : '未加载',
+					GLTFLoader: typeof GLTFLoader,
+					OrbitControls: typeof OrbitControls
+				});
+				
+				// 触发自定义事件，通知模块已加载
+				window.dispatchEvent(new CustomEvent('threejs-loaded', {
+					detail: { GLTFLoader, OrbitControls, THREE }
+				}));
+			} catch (error) {
+				console.error('[Three.js] ES模块加载失败:', error);
+				console.error('[Three.js] 错误详情:', error.message, error.stack);
+				
+				// 尝试备用方案：使用UMD版本（向后兼容）
+				console.log('[Three.js] 尝试使用备用UMD加载方式...');
+				loadUMDLoaders();
+			}
+		})();
+		
+		// 备用方案：使用UMD版本（如果ES模块失败，向后兼容）
+		function loadUMDLoaders() {
+			// 如果THREE对象未定义，先加载UMD版本的THREE核心库
+			if (typeof THREE === 'undefined') {
+				console.log('[Three.js] 加载UMD版本的THREE核心库...');
+				const threeScript = document.createElement('script');
+				threeScript.src = 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js';
+				threeScript.onload = function() {
+					console.log('[Three.js] UMD版本的THREE核心库已加载');
+					loadUMDLoaders(); // 重新尝试加载加载器
+				};
+				threeScript.onerror = function() {
+					console.error('[Three.js] UMD版本的THREE核心库加载失败');
+				};
+				document.head.appendChild(threeScript);
+				return;
+			}
+			
+			// 动态加载UMD版本的加载器 - 支持多种格式
+			const scripts = [
+				'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/loaders/GLTFLoader.js',
+				'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js',
+				'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/loaders/OBJLoader.js',
+				'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/loaders/FBXLoader.js',
+				'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/loaders/STLLoader.js',
+				'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/loaders/PLYLoader.js',
+				'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/loaders/ColladaLoader.js'
+			];
+			
+			let loadedCount = 0;
+			scripts.forEach((src, index) => {
+				const script = document.createElement('script');
+				script.src = src;
+				script.onload = function() {
+					loadedCount++;
+					console.log('[Three.js] UMD脚本加载成功:', src);
+					
+					if (loadedCount === scripts.length) {
+						// 所有脚本加载完成，检查是否可用
+						setTimeout(() => {
+							if (typeof THREE.GLTFLoader !== 'undefined' && typeof THREE.OrbitControls !== 'undefined') {
+								window.THREE_LOADERS = {
+									GLTFLoader: THREE.GLTFLoader,
+									OrbitControls: THREE.OrbitControls,
+									OBJLoader: THREE.OBJLoader,
+									FBXLoader: THREE.FBXLoader,
+									STLLoader: THREE.STLLoader,
+									PLYLoader: THREE.PLYLoader,
+									ColladaLoader: THREE.ColladaLoader
+								};
+								console.log('[Three.js] UMD模块加载成功');
+								window.dispatchEvent(new CustomEvent('threejs-loaded'));
+							} else {
+								console.error('[Three.js] UMD模块加载后仍不可用');
+							}
+						}, 100);
+					}
+				};
+				script.onerror = function() {
+					console.error('[Three.js] UMD脚本加载失败:', src);
+				};
+				document.head.appendChild(script);
+			});
+		}
+	</script>
+	<title>YuNi - 主界面</title>
+    <style>
+		* { box-sizing: border-box; margin: 0; padding: 0; }
+		
+		body.aw {
+			background: #f5f5f5;
+			min-height: 100vh;
+		}
+		
+		.main-interface {
+			min-height: 100vh;
+			background: #f5f5f5;
+			padding-top: 0;
+		}
+		
+		.shell {
+			min-height: 100vh;
+			padding: 40px 0;
+		}
+		
+		.wrap {
+			width: 100%;
+			max-width: 1200px;
+			margin: 0 auto;
+			padding: 0 24px;
+		}
+		
+		/* 主标题卡片 */
+		.hero-card {
+			background: #ffffff;
+			backdrop-filter: none;
+			border: 1px solid rgba(0, 0, 0, 0.08);
+			border-radius: 24px;
+			padding: 48px 40px;
+			text-align: center;
+			margin-top: 32px;
+			margin-bottom: 48px;
+			box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+			animation: fadeInUp 0.6s ease-out;
+		}
+		
+		.hero-card .hero-title {
+			font-size: clamp(36px, 5vw, 56px);
+			font-weight: 800;
+			line-height: 1.1;
+			letter-spacing: -0.03em;
+			color: #000000 !important;
+			margin: 0 0 16px;
+			font-family: 'Source Serif 4', serif;
+			background: none !important;
+			-webkit-background-clip: unset !important;
+			background-clip: unset !important;
+			-webkit-text-fill-color: #000000 !important;
+		}
+		
+		.hero-card .hero-sub {
+			font-size: 18px;
+			color: #5b6b8b;
+			margin: 0;
+			font-weight: 400;
+			font-family: 'Inter', sans-serif;
+		}
+		
+		/* 核心功能区域 */
+		.features-section {
+			margin-bottom: 48px;
+		}
+		
+		.section-title {
+			font-size: 24px;
+			font-weight: 700;
+			color: #000000;
+			margin: 0 0 24px;
+			font-family: 'Inter', sans-serif;
+			letter-spacing: -0.02em;
+		}
+		
+		.features-grid {
+			display: grid;
+			grid-template-columns: repeat(2, 1fr);
+			gap: 24px;
+		}
+		
+		@media (min-width: 1200px) {
+			.features-grid {
+				grid-template-columns: repeat(4, 1fr);
+			}
+		}
+		
+		@media (max-width: 768px) {
+			.features-grid {
+				grid-template-columns: 1fr;
+			}
+		}
+		
+		.feature-card {
+			background: #ffffff;
+			backdrop-filter: none;
+			border: 1px solid rgba(0, 0, 0, 0.08);
+			border-radius: 20px;
+			padding: 32px 28px;
+			text-align: center;
+			transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+			cursor: pointer;
+			position: relative;
+			overflow: hidden;
+			box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+			min-height: 280px;
+			display: flex;
+			flex-direction: column;
+			justify-content: space-between;
+		}
+		
+		.feature-card:hover {
+			transform: translateY(-4px);
+			box-shadow: 0 16px 48px rgba(0, 0, 0, 0.08);
+			border-color: rgba(0, 0, 0, 0.12);
+		}
+		
+		.feature-icon {
+			margin-bottom: 20px;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			height: 80px;
+		}
+		
+		/* 卡片1: 音频波形动画 */
+		.audio-wave-icon {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 6px;
+			height: 80px;
+		}
+		
+		.audio-wave-bar-icon {
+			width: 5px;
+			background: #000000;
+			border-radius: 3px;
+			animation: waveIconAnimation 1.2s ease-in-out infinite;
+		}
+		
+		.audio-wave-bar-icon:nth-child(1) { height: 20px; animation-delay: 0s; }
+		.audio-wave-bar-icon:nth-child(2) { height: 40px; animation-delay: 0.1s; }
+		.audio-wave-bar-icon:nth-child(3) { height: 60px; animation-delay: 0.2s; }
+		.audio-wave-bar-icon:nth-child(4) { height: 40px; animation-delay: 0.3s; }
+		.audio-wave-bar-icon:nth-child(5) { height: 20px; animation-delay: 0.4s; }
+		
+		@keyframes waveIconAnimation {
+			0%, 100% { 
+				transform: scaleY(0.3);
+				opacity: 0.6;
+			}
+			50% { 
+				transform: scaleY(1);
+				opacity: 1;
+			}
+		}
+		
+		/* 卡片2: 手型弹奏动画 */
+		.hand-bars-icon {
+			display: flex;
+			align-items: flex-end;
+			justify-content: center;
+			gap: 8px;
+			height: 80px;
+		}
+		
+		.hand-bar-icon {
+			width: 8px;
+			background: #000000;
+			border-radius: 4px 4px 0 0;
+			animation: handBarAnimation 1.5s ease-in-out infinite;
+		}
+		
+		.hand-bar-icon:nth-child(1) { height: 30px; animation-delay: 0s; }
+		.hand-bar-icon:nth-child(2) { height: 50px; animation-delay: 0.15s; }
+		.hand-bar-icon:nth-child(3) { height: 70px; animation-delay: 0.3s; }
+		.hand-bar-icon:nth-child(4) { height: 50px; animation-delay: 0.45s; }
+		.hand-bar-icon:nth-child(5) { height: 30px; animation-delay: 0.6s; }
+		
+		@keyframes handBarAnimation {
+			0%, 100% { 
+				transform: scaleY(0.5);
+				opacity: 0.7;
+			}
+			50% { 
+				transform: scaleY(1);
+				opacity: 1;
+			}
+		}
+		
+		/* 卡片3: 文本输入动画 */
+		.typing-lines-icon {
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			align-items: center;
+			gap: 8px;
+			height: 80px;
+			width: 100%;
+		}
+		
+		.typing-line-icon {
+			width: 0%;
+			height: 3px;
+			background: #000000;
+			border-radius: 2px;
+			animation: typingLineAnimation 2s ease-in-out infinite;
+		}
+		
+		.typing-line-icon:nth-child(1) { 
+			--target-width: 80%;
+			animation-delay: 0s;
+		}
+		.typing-line-icon:nth-child(2) { 
+			--target-width: 100%;
+			animation-delay: 0.5s;
+		}
+		.typing-line-icon:nth-child(3) { 
+			--target-width: 70%;
+			animation-delay: 1s;
+		}
+		.typing-line-icon:nth-child(4) { 
+			--target-width: 90%;
+			animation-delay: 1.5s;
+		}
+		
+		@keyframes typingLineAnimation {
+			0% {
+				width: 0%;
+			}
+			25% {
+				width: var(--target-width);
+			}
+			50%, 100% {
+				width: var(--target-width);
+			}
+		}
+		
+		/* 卡片4: 对话气泡图标（AI 心理咨询） */
+		.chat-bubble-icon {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			height: 80px;
+			position: relative;
+		}
+		
+		.chat-bubble-icon::before {
+			content: '';
+			width: 50px;
+			height: 40px;
+			background: #000000;
+			border-radius: 20px 20px 20px 4px;
+			position: relative;
+			animation: chatBubblePulse 2s ease-in-out infinite;
+		}
+		
+		.chat-bubble-icon::after {
+			content: '';
+			width: 20px;
+			height: 20px;
+			background: #000000;
+			border-radius: 0 0 20px 0;
+			position: absolute;
+			bottom: 8px;
+			left: 50%;
+			transform: translateX(-50%) rotate(45deg);
+			animation: chatBubblePulse 2s ease-in-out infinite;
+		}
+		
+		@keyframes chatBubblePulse {
+			0%, 100% {
+				opacity: 1;
+				transform: scale(1);
+			}
+			50% {
+				opacity: 0.8;
+				transform: scale(1.05);
+			}
+		}
+		
+		.chat-bubble-icon::after {
+			transform: translateX(-50%) rotate(45deg);
+		}
+		
+		.feature-title {
+			font-size: 20px;
+			font-weight: 700;
+			color: #000000;
+			margin: 0 0 12px;
+			font-family: 'Inter', sans-serif;
+		}
+		
+		.feature-desc {
+			font-size: 15px;
+			color: #5b6b8b;
+			margin: 0 0 24px;
+			line-height: 1.6;
+			font-family: 'Inter', sans-serif;
+		}
+		
+		.feature-btn {
+			display: inline-block;
+			padding: 12px 24px;
+			background: #000000 !important;
+			color: #ffffff !important;
+			border-radius: 10px;
+			text-decoration: none;
+			font-size: 14px;
+			font-weight: 600;
+			transition: background 0.3s ease;
+			font-family: 'Inter', sans-serif;
+			border: none;
+		}
+		
+		.feature-btn:hover {
+			background: #333333 !important;
+			transform: none;
+			box-shadow: none;
+		}
+		
+		/* 数据概览 */
+		.stats-section {
+			margin-bottom: 48px;
+		}
+		
+		.stats-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+			gap: 20px;
+		}
+		
+		.stat-card {
+			background: rgba(255, 255, 255, 0.9);
+			backdrop-filter: blur(20px);
+			border: 1px solid rgba(0, 0, 0, 0.08);
+			border-radius: 16px;
+			padding: 24px;
+			text-align: center;
+			transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+		}
+		
+		.stat-card:hover {
+			transform: translateY(-4px);
+			box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+		}
+		
+		.stat-label {
+			font-size: 14px;
+			color: #5b6b8b;
+			margin: 0 0 12px;
+			font-weight: 500;
+			font-family: 'Inter', sans-serif;
+		}
+		
+		.stat-value {
+			font-size: 28px;
+			font-weight: 700;
+			color: #000000;
+			margin: 0;
+			font-family: 'Inter', sans-serif;
+		}
+		
+		/* 历史记录 */
+		.history-section {
+			background: rgba(255, 255, 255, 0.9);
+			backdrop-filter: blur(20px);
+			border: 1px solid rgba(0, 0, 0, 0.08);
+			border-radius: 20px;
+			padding: 32px;
+			box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+		}
+		
+		.history-list {
+			margin-top: 24px;
+		}
+		
+		.history-item {
+			padding: 20px;
+			border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+			transition: background 0.2s ease;
+		}
+		
+		.history-item:last-child {
+			border-bottom: none;
+		}
+		
+		.history-item:hover {
+			background: rgba(0, 0, 0, 0.02);
+			border-radius: 12px;
+		}
+		
+		.history-meta {
+			font-size: 13px;
+			color: #5b6b8b;
+			margin: 0 0 12px;
+			font-family: 'Inter', sans-serif;
+		}
+		
+		.history-text {
+			font-size: 15px;
+			color: #0a0a0a;
+			line-height: 1.6;
+			margin: 0;
+			white-space: pre-wrap;
+			word-break: break-word;
+			font-family: 'Inter', sans-serif;
+		}
+		
+		.history-audio {
+			position: relative;
+			margin: 8px 0;
+		}
+		
+		.history-delete-btn {
+			position: absolute;
+			top: 4px;
+			right: 4px;
+			background: rgba(0, 0, 0, 0.05);
+			border: 1px solid rgba(0, 0, 0, 0.2);
+			border-radius: 4px;
+			padding: 4px 8px;
+			cursor: pointer;
+			font-size: 14px;
+			transition: all 0.2s;
+			z-index: 10;
+			color: #666666;
+		}
+		
+		.history-delete-btn:hover {
+			background: rgba(0, 0, 0, 0.1);
+			border-color: rgba(0, 0, 0, 0.3);
+			color: #000000;
+		}
+		
+		.empty-state {
+			text-align: center;
+			padding: 48px 24px;
+			color: #5b6b8b;
+			font-family: 'Inter', sans-serif;
+		}
+		
+		/* 3D模型展示区域 */
+		.model-display-section {
+			margin-bottom: 48px;
+		}
+		
+		.model-container {
+			background: rgba(255, 255, 255, 0.9);
+			backdrop-filter: blur(20px);
+			border: 1px solid rgba(0, 0, 0, 0.08);
+			border-radius: 20px;
+			padding: 24px;
+			box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+			overflow: hidden;
+			position: relative;
+		}
+		
+		.model-viewer-wrapper {
+			width: 100%;
+			height: 500px;
+			min-height: 500px;
+			border-radius: 12px;
+			overflow: hidden;
+			background: #ffffff; /* 默认白色背景（没有模型时） */
+			position: relative;
+			/* 当鼠标在区域内时，禁用页面滚动和文本选择 */
+			touch-action: none;
+			-webkit-user-select: none;
+			user-select: none;
+		}
+		
+		.model-viewer-wrapper.has-model {
+			background: #000000; /* 有模型时黑色背景 */
+		}
+		
+		.model-viewer-wrapper.model-interactive {
+			/* 鼠标在区域内时的样式（可选） */
+			cursor: grab;
+		}
+		
+		.model-viewer-wrapper.model-interactive:active {
+			cursor: grabbing;
+		}
+		
+		.model-viewer-wrapper #threeCanvas {
+			cursor: grab;
+			touch-action: none;
+		}
+		
+		.model-viewer-wrapper #threeCanvas:active {
+			cursor: grabbing;
+		}
+		
+		#threeCanvas {
+			width: 100%;
+			height: 100%;
+			display: block;
+			background: #000000; /* 确保canvas背景是黑色 */
+		}
+		
+		.model-toolbar {
+			position: absolute;
+			top: 10px;
+			right: 10px;
+			display: flex;
+			gap: 8px;
+			z-index: 100;
+		}
+		
+		.toolbar-btn {
+			background: rgba(255, 255, 255, 0.2);
+			border: 1px solid rgba(255, 255, 255, 0.3);
+			border-radius: 6px;
+			padding: 8px 12px;
+			cursor: pointer;
+			font-size: 18px;
+			color: #ffffff;
+			transition: all 0.2s;
+			backdrop-filter: blur(4px);
+		}
+		
+		.toolbar-btn:hover {
+			background: rgba(255, 255, 255, 0.3);
+			border-color: rgba(255, 255, 255, 0.5);
+		}
+		
+		.model-settings-panel {
+			position: absolute;
+			top: 50px;
+			right: 10px;
+			width: 280px;
+			background: rgba(0, 0, 0, 0.85);
+			backdrop-filter: blur(12px);
+			border: 1px solid rgba(255, 255, 255, 0.2);
+			border-radius: 12px;
+			padding: 16px;
+			z-index: 101;
+			color: #ffffff;
+			font-family: 'Inter', sans-serif;
+		}
+		
+		.settings-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: 16px;
+			font-weight: 600;
+			font-size: 14px;
+		}
+		
+		.settings-close {
+			background: none;
+			border: none;
+			color: #ffffff;
+			font-size: 24px;
+			cursor: pointer;
+			padding: 0;
+			width: 24px;
+			height: 24px;
+			line-height: 1;
+			opacity: 0.7;
+			transition: opacity 0.2s;
+		}
+		
+		.settings-close:hover {
+			opacity: 1;
+		}
+		
+		.settings-content {
+			display: flex;
+			flex-direction: column;
+			gap: 16px;
+		}
+		
+		.setting-group {
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+		}
+		
+		.setting-group label {
+			font-size: 13px;
+			color: rgba(255, 255, 255, 0.9);
+			font-weight: 500;
+		}
+		
+		.color-picker-wrapper {
+			display: flex;
+			gap: 8px;
+			align-items: center;
+		}
+		
+		.color-picker-wrapper input[type="color"] {
+			width: 50px;
+			height: 36px;
+			border: 1px solid rgba(255, 255, 255, 0.3);
+			border-radius: 6px;
+			cursor: pointer;
+			background: none;
+		}
+		
+		.color-picker-wrapper input[type="text"] {
+			flex: 1;
+			height: 36px;
+			padding: 0 12px;
+			background: rgba(255, 255, 255, 0.1);
+			border: 1px solid rgba(255, 255, 255, 0.2);
+			border-radius: 6px;
+			color: #ffffff;
+			font-size: 13px;
+			font-family: 'Inter', monospace;
+		}
+		
+		.color-picker-wrapper input[type="text"]:focus {
+			outline: none;
+			border-color: rgba(255, 255, 255, 0.5);
+			background: rgba(255, 255, 255, 0.15);
+		}
+		
+		.brightness-control {
+			display: flex;
+			gap: 12px;
+			align-items: center;
+		}
+		
+		.brightness-control input[type="range"] {
+			flex: 1;
+			height: 6px;
+			background: rgba(255, 255, 255, 0.2);
+			border-radius: 3px;
+			outline: none;
+			-webkit-appearance: none;
+		}
+		
+		.brightness-control input[type="range"]::-webkit-slider-thumb {
+			-webkit-appearance: none;
+			appearance: none;
+			width: 18px;
+			height: 18px;
+			background: #ffffff;
+			border-radius: 50%;
+			cursor: pointer;
+		}
+		
+		.brightness-control input[type="range"]::-moz-range-thumb {
+			width: 18px;
+			height: 18px;
+			background: #ffffff;
+			border-radius: 50%;
+			cursor: pointer;
+			border: none;
+		}
+		
+		.brightness-control span {
+			min-width: 40px;
+			text-align: right;
+			font-size: 13px;
+			color: rgba(255, 255, 255, 0.9);
+			font-family: 'Inter', monospace;
+		}
+		
+		.model-viewer-wrapper.fullscreen {
+			position: fixed !important;
+			top: 0 !important;
+			left: 0 !important;
+			width: 100vw !important;
+			height: 100vh !important;
+			min-width: 100vw !important;
+			min-height: 100vh !important;
+			max-width: 100vw !important;
+			max-height: 100vh !important;
+			z-index: 99999 !important;
+			border-radius: 0 !important;
+			margin: 0 !important;
+			padding: 0 !important;
+		}
+		
+		.model-viewer-wrapper.fullscreen #threeCanvas {
+			width: 100vw !important;
+			height: 100vh !important;
+			position: absolute;
+			top: 0;
+			left: 0;
+		}
+		
+		.model-controls-hint {
+			position: absolute;
+			bottom: 20px;
+			left: 20px;
+			background: rgba(0, 0, 0, 0.7);
+			backdrop-filter: blur(8px);
+			border-radius: 8px;
+			padding: 12px 16px;
+			color: #ffffff;
+			font-size: 13px;
+			font-family: 'Inter', sans-serif;
+			z-index: 100;
+			opacity: 0.9;
+			transition: opacity 0.3s;
+		}
+		
+		.model-controls-hint:hover {
+			opacity: 1;
+		}
+		
+		.hint-item {
+			margin: 4px 0;
+			line-height: 1.5;
+		}
+		
+		.model-viewer-wrapper.fullscreen .model-controls-hint {
+			bottom: 30px;
+			left: 30px;
+		}
+		
+		.model-loading {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			color: #5b6b8b;
+			font-size: 16px;
+			font-family: 'Inter', sans-serif;
+			z-index: 1;
+		}
+		
+		/* 模型管理区域 */
+		.model-controls {
+			display: flex;
+			gap: 12px;
+			margin-bottom: 16px;
+			flex-wrap: wrap;
+		}
+		
+		.model-select-wrapper {
+			flex: 1;
+			min-width: 200px;
+		}
+		
+		.model-select {
+			width: 100%;
+			padding: 10px 16px;
+			border: 1px solid rgba(0, 0, 0, 0.15);
+			border-radius: 10px;
+			background: rgba(255, 255, 255, 0.9);
+			font-size: 14px;
+			font-family: 'Inter', sans-serif;
+			color: #0a0a0a;
+			cursor: pointer;
+			transition: all 0.2s;
+		}
+		
+		.model-select:hover {
+			border-color: rgba(0, 0, 0, 0.25);
+		}
+		
+		.model-select:focus {
+			outline: none;
+			border-color: #000000;
+			box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+		}
+		
+		.upload-btn, .delete-btn {
+			padding: 10px 20px;
+			border: none;
+			border-radius: 10px;
+			font-size: 14px;
+			font-weight: 600;
+			cursor: pointer;
+			transition: all 0.3s;
+			font-family: 'Inter', sans-serif;
+		}
+		
+		.upload-btn {
+			background: #000000;
+			color: #ffffff;
+		}
+		
+		.upload-btn:hover {
+			background: #1a1a1a;
+			transform: translateY(-2px);
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+		}
+		
+		.delete-btn {
+			background: rgba(0, 0, 0, 0.05);
+			color: #000000;
+			border: 1px solid rgba(0, 0, 0, 0.2);
+		}
+		
+		.delete-btn:hover {
+			background: rgba(0, 0, 0, 0.1);
+			border-color: rgba(0, 0, 0, 0.3);
+		}
+		
+		.delete-btn:disabled {
+			opacity: 0.5;
+			cursor: not-allowed;
+		}
+		
+		/* 模型加载进度条 - 参考Sketchfab设计 */
+		.model-loading-progress {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 20px;
+			z-index: 100;
+			background: rgba(255, 255, 255, 0.95);
+			padding: 40px 60px;
+			border-radius: 16px;
+			box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+			min-width: 300px;
+		}
+		
+		.model-loading-spinner {
+			width: 48px;
+			height: 48px;
+			border: 4px solid rgba(0, 0, 0, 0.1);
+			border-top-color: #000000;
+			border-radius: 50%;
+			animation: spin 1s linear infinite;
+		}
+		
+		@keyframes spin {
+			to { transform: rotate(360deg); }
+		}
+		
+		.model-loading-text {
+			font-size: 16px;
+			font-weight: 600;
+			color: #000000;
+			font-family: 'Inter', sans-serif;
+			text-align: center;
+		}
+		
+		.model-loading-bar {
+			width: 100%;
+			height: 4px;
+			background: rgba(0, 0, 0, 0.1);
+			border-radius: 2px;
+			overflow: hidden;
+		}
+		
+		.model-loading-bar-fill {
+			height: 100%;
+			background: linear-gradient(90deg, #000000, #333333);
+			border-radius: 2px;
+			transition: width 0.3s ease;
+			width: 0%;
+		}
+		
+		/* 上传对话框 */
+		.upload-modal {
+			display: none;
+			position: fixed;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			background: rgba(0, 0, 0, 0.5);
+			backdrop-filter: blur(4px);
+			z-index: 100000 !important; /* 确保在全屏模式之上 */
+			align-items: center;
+			justify-content: center;
+		}
+		
+		.upload-modal.active {
+			display: flex !important;
+		}
+		
+		.upload-modal-content {
+			background: rgba(255, 255, 255, 0.95);
+			backdrop-filter: blur(20px);
+			border-radius: 20px;
+			padding: 32px;
+			max-width: 500px;
+			width: 90%;
+			box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+		}
+		
+		.upload-modal-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: 24px;
+		}
+		
+		.upload-modal-title {
+			font-size: 24px;
+			font-weight: 700;
+			color: #000000;
+			font-family: 'Inter', sans-serif;
+		}
+		
+		.close-btn {
+			background: none;
+			border: none;
+			font-size: 24px;
+			cursor: pointer;
+			color: #5b6b8b;
+			transition: color 0.2s;
+		}
+		
+		.close-btn:hover {
+			color: #000000;
+		}
+		
+		.upload-area {
+			border: 2px dashed rgba(0, 0, 0, 0.2);
+			border-radius: 12px;
+			padding: 40px;
+			text-align: center;
+			cursor: pointer;
+			transition: all 0.3s;
+			margin-bottom: 16px;
+		}
+		
+		.upload-area:hover {
+			border-color: #3b82f6;
+			background: rgba(59, 130, 246, 0.05);
+		}
+		
+		.upload-area.dragover {
+			border-color: #3b82f6;
+			background: rgba(59, 130, 246, 0.1);
+		}
+		
+		.upload-input {
+			display: none;
+		}
+		
+		.upload-hint {
+			color: #5b6b8b;
+			font-size: 14px;
+			margin-top: 8px;
+			font-family: 'Inter', sans-serif;
+		}
+		
+		.upload-progress {
+			display: none;
+			margin-top: 16px;
+		}
+		
+		.upload-progress.active {
+			display: block;
+		}
+		
+		.progress-bar {
+			width: 100%;
+			height: 8px;
+			background: rgba(0, 0, 0, 0.1);
+			border-radius: 4px;
+			overflow: hidden;
+		}
+		
+		.progress-fill {
+			height: 100%;
+			background: #000000;
+			transition: width 0.3s;
+		}
+		
+		@keyframes fadeInUp {
+			from {
+				opacity: 0;
+				transform: translateY(20px);
+			}
+			to {
+				opacity: 1;
+				transform: translateY(0);
+			}
+		}
+		
+		/* 响应式设计 */
+		@media (max-width: 768px) {
+			.wrap {
+				padding: 0 16px;
+			}
+			
+				justify-content: flex-end;
+			}
+			
+			.hero-card {
+				padding: 32px 24px;
+			}
+			
+			.features-grid {
+				grid-template-columns: 1fr;
+			}
+			
+			.stats-grid {
+				grid-template-columns: 1fr;
+			}
+			
+			.model-viewer-wrapper {
+				height: 400px;
+			}
+		}
+    </style>
+</head>
+<body class="aw">
+	{% include 'shared/header.html' %}
+	<div class="main-interface">
+		<div class="shell container">
+			<div class="wrap">
+				<!-- 主标题卡片 -->
+				<div class="hero-card">
+					<h1 class="hero-title">YuNi 语音识别与用户系统</h1>
+					<p class="hero-sub">快速进入语音识别，或管理你的账户</p>
+				</div>
+				
+				<!-- 核心功能 -->
+				<div class="features-section">
+					<h2 class="section-title">核心功能</h2>
+					<div class="features-grid">
+						<!-- 语音文字互转 -->
+						<div class="feature-card" onclick="window.location.href='/whisper'">
+							<div class="feature-icon">
+								<div class="audio-wave-icon">
+									<div class="audio-wave-bar-icon"></div>
+									<div class="audio-wave-bar-icon"></div>
+									<div class="audio-wave-bar-icon"></div>
+									<div class="audio-wave-bar-icon"></div>
+									<div class="audio-wave-bar-icon"></div>
+								</div>
+							</div>
+							<h3 class="feature-title">语音文字互转</h3>
+							<p class="feature-desc">将语音转换为文字，或将文字转换为语音</p>
+							<a href="/whisper" class="feature-btn" onclick="event.stopPropagation()">开始使用</a>
+						</div>
+						
+						<!-- 语音手语互转 -->
+						<div class="feature-card" onclick="window.location.href='/sign-language'">
+							<div class="feature-icon">
+								<div class="hand-bars-icon">
+									<div class="hand-bar-icon"></div>
+									<div class="hand-bar-icon"></div>
+									<div class="hand-bar-icon"></div>
+									<div class="hand-bar-icon"></div>
+									<div class="hand-bar-icon"></div>
+								</div>
+							</div>
+							<h3 class="feature-title">语音手语互转</h3>
+							<p class="feature-desc">将语音转换为手语动画，或将手语转换为语音</p>
+							<a href="/sign-language" class="feature-btn" onclick="event.stopPropagation()">开始使用</a>
+						</div>
+						
+						<!-- 手语文字互转 -->
+						<div class="feature-card" onclick="window.location.href='/sign-text'">
+							<div class="feature-icon">
+								<div class="typing-lines-icon">
+									<div class="typing-line-icon" style="--target-width: 80%;"></div>
+									<div class="typing-line-icon" style="--target-width: 100%;"></div>
+									<div class="typing-line-icon" style="--target-width: 70%;"></div>
+									<div class="typing-line-icon" style="--target-width: 90%;"></div>
+								</div>
+							</div>
+							<h3 class="feature-title">手语文字互转</h3>
+							<p class="feature-desc">将手语动画转换为文字，或将文字转换为手语</p>
+							<a href="/sign-text" class="feature-btn" onclick="event.stopPropagation()">开始使用</a>
+						</div>
+						
+						<!-- AI 心理咨询 -->
+						<div class="feature-card" onclick="window.location.href='/mental-health'">
+							<div class="feature-icon">
+								<div class="chat-bubble-icon"></div>
+							</div>
+							<h3 class="feature-title">AI 心理咨询</h3>
+							<p class="feature-desc">基于 RAG 技术的专业心理健康问答与情感支持助手。</p>
+							<a href="/mental-health" class="feature-btn" onclick="event.stopPropagation()">开始咨询</a>
+						</div>
+					</div>
+				</div>
+				
+				<!-- 3D模型展示 -->
+				<div class="model-display-section">
+					<h2 class="section-title">3D模型展示</h2>
+					<div class="model-container">
+						<div class="model-controls">
+							<div class="model-select-wrapper">
+								<select id="modelSelect" class="model-select">
+									<option value="">选择模型...</option>
+								</select>
+							</div>
+							<button class="upload-btn" onclick="openUploadModal()">上传模型</button>
+							<button class="delete-btn" id="deleteBtn" onclick="deleteCurrentModel()" disabled>删除当前模型</button>
+						</div>
+						<div class="model-viewer-wrapper">
+							<div class="model-loading" id="modelLoading">暂无模型</div>
+							<canvas id="threeCanvas" style="display: none;"></canvas>
+							<div class="model-settings-panel" id="settingsPanel" style="display: none;">
+								<div class="settings-header">
+									<span>显示设置</span>
+									<button class="settings-close" onclick="toggleSettingsPanel()">×</button>
+								</div>
+								<div class="settings-content">
+									<div class="setting-group">
+										<label>背景颜色</label>
+										<div class="color-picker-wrapper">
+											<input type="color" id="bgColorPicker" value="#000000" onchange="updateBackgroundColor(this.value)">
+											<input type="text" id="bgColorText" value="#000000" onchange="updateBackgroundColor(this.value)" placeholder="#000000">
+										</div>
+									</div>
+									<div class="setting-group">
+										<label>环境光颜色</label>
+										<div class="color-picker-wrapper">
+											<input type="color" id="ambientColorPicker" value="#d4d4d4" onchange="updateAmbientColor(this.value)">
+											<input type="text" id="ambientColorText" value="#d4d4d4" onchange="updateAmbientColor(this.value)" placeholder="#d4d4d4">
+										</div>
+									</div>
+									<div class="setting-group">
+										<label>环境光亮度</label>
+										<div class="brightness-control">
+											<input type="range" id="ambientBrightness" min="0" max="2" step="0.1" value="1.0" oninput="updateAmbientBrightness(this.value)">
+											<span id="brightnessValue">1.0</span>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="model-toolbar">
+								<button id="settingsBtn" class="toolbar-btn" onclick="toggleSettingsPanel()" title="显示设置" style="display: none;">⚙️</button>
+								<button id="fullscreenBtn" class="toolbar-btn" onclick="toggleFullscreen()" title="全屏查看 (ESC退出)" style="display: none;">⛶</button>
+							</div>
+							<div class="model-controls-hint" id="controlsHint" style="display: none;">
+								<div class="hint-item">🖱️ 左键拖动：旋转</div>
+								<div class="hint-item">🖱️ 滚轮：缩放</div>
+								<div class="hint-item">🖱️ 右键拖动：平移</div>
+								<div class="hint-item">🖱️ 按住滚轮拖动：平移</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				
+				<!-- 上传对话框 -->
+				<div id="uploadModal" class="upload-modal">
+					<div class="upload-modal-content">
+						<div class="upload-modal-header">
+							<h3 class="upload-modal-title">上传3D模型</h3>
+							<button class="close-btn" onclick="closeUploadModal()">&times;</button>
+						</div>
+						<div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+							<div style="font-size: 48px; margin-bottom: 16px;">📦</div>
+							<div style="font-size: 16px; font-weight: 600; color: #0a0a0a; margin-bottom: 8px; font-family: 'Inter', sans-serif;">点击或拖拽文件到此处</div>
+							<div class="upload-hint">支持 GLB、glTF、OBJ、FBX、STL、PLY、DAE、3DS 格式，最大 100MB</div>
+							<input type="file" id="fileInput" class="upload-input" accept=".glb,.gltf,.obj,.fbx,.stl,.ply,.dae,.3ds" />
+						</div>
+						<div class="upload-progress" id="uploadProgress">
+							<div class="progress-bar">
+								<div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+							</div>
+							<div style="text-align: center; margin-top: 8px; color: #5b6b8b; font-size: 14px; font-family: 'Inter', sans-serif;" id="progressText">上传中...</div>
+						</div>
+						<!-- 确认保存对话框 -->
+						<div id="confirmUploadSection" style="display: none; margin-top: 24px;">
+							<div style="margin-bottom: 16px;">
+								<label style="display: block; margin-bottom: 8px; font-weight: 600; color: #0a0a0a; font-family: 'Inter', sans-serif;">模型名称</label>
+								<input type="text" id="modelNameInput" placeholder="请输入模型名称" style="width: 100%; padding: 12px; border: 1px solid rgba(0, 0, 0, 0.2); border-radius: 8px; font-size: 14px; font-family: 'Inter', sans-serif;" />
+							</div>
+							<div style="display: flex; gap: 12px; justify-content: flex-end;">
+								<button onclick="cancelUpload()" style="padding: 10px 20px; border: 1px solid rgba(0, 0, 0, 0.2); background: #ffffff; border-radius: 8px; cursor: pointer; font-family: 'Inter', sans-serif; font-weight: 600;">取消</button>
+								<button onclick="confirmUpload()" style="padding: 10px 20px; border: none; background: #000000; color: #ffffff; border-radius: 8px; cursor: pointer; font-family: 'Inter', sans-serif; font-weight: 600;">确认保存</button>
+							</div>
+						</div>
+					</div>
+				</div>
+				
+				<!-- 数据概览 -->
+				<div class="stats-section">
+					<h2 class="section-title">数据概览</h2>
+					<div class="stats-grid">
+						<div class="stat-card">
+							<div class="stat-label">最近记录</div>
+							<div class="stat-value" id="kpi-history">--</div>
+						</div>
+						<div class="stat-card">
+							<div class="stat-label">当前模型</div>
+							<div class="stat-value" id="kpi-model" style="font-size: 18px;">--</div>
+						</div>
+					</div>
+				</div>
+				
+				<!-- 最近识别 -->
+				<div class="history-section">
+					<div class="flex items-center justify-between mb-2">
+						<h2 class="section-title" style="margin-bottom: 0;">最近识别</h2>
+						<button onclick="clearAllHistory()" class="text-xs text-red-600 hover:text-red-700 px-2 py-1 rounded hover:bg-red-50" title="清空所有历史记录">清空</button>
+					</div>
+					<div id="list" class="history-list">
+						<div class="empty-state">暂无识别记录</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	{% include 'shared/footer.html' %}
+    <script>
+	(function(){
+		// 强制使用浅色主题
+		document.documentElement.setAttribute('data-theme','light');
+		document.body.style.background = '#f5f5f5';
+		
+		// 删除历史记录函数 - 需要在全局作用域中定义以便onclick调用
+		window.deleteHistoryItem = function(historyId) {
+			console.log('[历史记录] deleteHistoryItem 被调用，ID:', historyId);
+			if (!confirm('确定要删除这条历史记录吗？此操作不可恢复。')) {
+				return;
+			}
+			
+			fetch(`/api/history/${historyId}`, {
+				method: 'DELETE'
+			})
+				.then(r => {
+					console.log('[历史记录] 删除请求响应:', r.status, r.statusText);
+					if (!r.ok) {
+						return r.json().then(err => Promise.reject(err));
+					}
+					return r.json();
+				})
+				.then(data => {
+					console.log('[历史记录] 删除成功:', data);
+					alert('历史记录已删除');
+					// 重新加载历史记录
+					loadHistory();
+				})
+				.catch(error => {
+					console.error('[历史记录] 删除失败:', error);
+					alert('删除失败: ' + (error.detail || error.message || '未知错误'));
+				});
+		};
+		
+		// 清空所有历史记录函数
+		window.clearAllHistory = function() {
+			if (!confirm('确定要清空所有历史记录吗？此操作不可恢复。')) {
+				return;
+			}
+			
+			fetch('/api/history/clear', {
+				method: 'POST'
+			})
+				.then(r => {
+					if (!r.ok) {
+						return r.json().then(err => Promise.reject(err));
+					}
+					return r.json();
+				})
+				.then(data => {
+					alert('历史记录已清空');
+					loadHistory();
+				})
+				.catch(error => {
+					console.error('[历史记录] 清空失败:', error);
+					alert('清空失败: ' + (error.detail || error.message || '未知错误'));
+				});
+		};
+		
+		// 加载历史记录函数
+		function loadHistory() {
+			console.log('[历史记录] 开始加载历史记录');
+		fetch('/api/history')
+				.then(r => {
+					console.log('[历史记录] 响应状态:', r.status, r.statusText);
+					if (!r.ok) {
+						throw new Error(`HTTP ${r.status}: ${r.statusText}`);
+					}
+					return r.json();
+				})
+			.then(d => {
+					console.log('[历史记录] 历史记录数据:', d);
+				const items = d.items || [];
+					console.log('[历史记录] 历史记录数量:', items.length);
+				const historyEl = document.getElementById('list');
+				const kpiHistoryEl = document.getElementById('kpi-history');
+				
+				if (kpiHistoryEl) {
+					kpiHistoryEl.textContent = String(items.length);
+				}
+				
+				if (historyEl && items.length > 0) {
+					historyEl.innerHTML = items.slice(0, 10).map(it => {
+						const dt = new Date((it.ts || 0) * 1000).toLocaleString('zh-CN');
+						const model = it.model ? it.model.split(/[\\\/]/).pop() : '';
+							const audioUrl = it.audio_url || '';
+							// 检查音频URL是否有效
+							const audioHtml = audioUrl ? `
+								<div class="history-audio">
+									<audio controls src="${audioUrl}" style="width: 100%;" onerror="this.parentElement.innerHTML='<span style=\\'color:#666666;\\'>音频文件无法加载</span>'">
+										<source src="${audioUrl}" type="audio/wav">
+										<source src="${audioUrl}" type="audio/mpeg">
+										<source src="${audioUrl}" type="audio/mp3">
+										您的浏览器不支持音频播放
+									</audio>
+									<button class="history-delete-btn" onclick="deleteHistoryItem('${it.id}')" title="删除此记录">🗑️</button>
+								</div>
+							` : '<div class="history-audio"><span style="color:#999;">无音频文件</span></div>';
+						const text = (it.text || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+						return `
+								<div class="history-item" data-history-id="${it.id}">
+								<div class="history-meta">${dt}${model ? ' · ' + model : ''}</div>
+									${audioHtml}
+								<p class="history-text">${text}</p>
+							</div>
+						`;
+					}).join('');
+						console.log('[历史记录] 历史记录已显示');
+				} else if (historyEl) {
+					historyEl.innerHTML = '<div class="empty-state">暂无识别记录</div>';
+						console.log('[历史记录] 没有历史记录');
+				}
+			})
+				.catch(error => {
+					console.error('[历史记录] 加载历史记录失败:', error);
+				const historyEl = document.getElementById('list');
+				if (historyEl) {
+						historyEl.innerHTML = '<div class="empty-state">加载失败: ' + (error.message || '未知错误') + '</div>';
+					}
+				});
+		}
+		
+		// 初始化时加载历史记录
+		loadHistory();
+		
+		// 添加诊断函数到全局，方便调试
+		window.debugThreeJS = function() {
+			console.log('=== Three.js 诊断信息 ===');
+			console.log('THREE对象:', typeof THREE !== 'undefined' ? '已加载 ✓' : '未加载 ✗');
+			console.log('THREE_LOADERS:', window.THREE_LOADERS ? Object.keys(window.THREE_LOADERS) : '未加载 ✗');
+			console.log('场景:', scene ? '已初始化 ✓' : '未初始化 ✗');
+			console.log('相机:', camera ? `已初始化 ✓ (位置: ${camera.position.x}, ${camera.position.y}, ${camera.position.z})` : '未初始化 ✗');
+			console.log('渲染器:', renderer ? `已初始化 ✓ (尺寸: ${renderer.getSize(new THREE.Vector2()).x}x${renderer.getSize(new THREE.Vector2()).y})` : '未初始化 ✗');
+			console.log('控制器:', controls ? '已初始化 ✓' : '未初始化 ✗');
+			console.log('当前模型:', currentModel ? `已加载 ✓ (类型: ${currentModel.type})` : '未加载 ✗');
+			console.log('动画ID:', animationId ? '运行中 ✓' : '未运行 ✗');
+			
+			const canvas = document.getElementById('threeCanvas');
+			if (canvas) {
+				console.log('Canvas元素:', '找到 ✓');
+				console.log('Canvas显示状态:', canvas.style.display);
+				console.log('Canvas可见性:', canvas.style.visibility || '默认');
+				console.log('Canvas透明度:', canvas.style.opacity || '默认');
+				console.log('Canvas尺寸:', canvas.clientWidth, 'x', canvas.clientHeight);
+				console.log('Canvas实际尺寸:', canvas.width, 'x', canvas.height);
+				const wrapper = canvas.parentElement;
+				if (wrapper) {
+					console.log('父容器尺寸:', wrapper.clientWidth, 'x', wrapper.clientHeight);
+				}
+			} else {
+				console.log('Canvas元素:', '未找到 ✗');
+			}
+			
+			const modelLoading = document.getElementById('modelLoading');
+			if (modelLoading) {
+				console.log('加载提示显示状态:', modelLoading.style.display);
+				console.log('加载提示文本:', modelLoading.textContent);
+			}
+			
+			if (scene && scene.children) {
+				console.log('场景子对象数量:', scene.children.length);
+				scene.children.forEach((child, index) => {
+					console.log(`  子对象 ${index}:`, child.type, child.name || '未命名', child.visible ? '(可见)' : '(隐藏)');
+				});
+			}
+			
+			// 检查WebGL支持
+			try {
+				const gl = canvas ? canvas.getContext('webgl') || canvas.getContext('experimental-webgl') : null;
+				console.log('WebGL支持:', gl ? '支持 ✓' : '不支持 ✗');
+			} catch (e) {
+				console.log('WebGL支持:', '检查失败 ✗');
+			}
+			
+			console.log('=== 诊断结束 ===');
+			
+			// 返回诊断结果对象
+			return {
+				threeLoaded: typeof THREE !== 'undefined',
+				loadersLoaded: !!window.THREE_LOADERS,
+				sceneInitialized: !!scene,
+				cameraInitialized: !!camera,
+				rendererInitialized: !!renderer,
+				modelLoaded: !!currentModel,
+				animationRunning: !!animationId,
+				canvasFound: !!canvas,
+				canvasVisible: canvas ? canvas.style.display !== 'none' : false
+			};
+		};
+		
+		// 页面加载完成后自动检查
+		window.addEventListener('load', function() {
+			setTimeout(function() {
+				console.log('[Three.js] 页面加载完成，检查Three.js状态...');
+				if (typeof THREE === 'undefined') {
+					console.error('[Three.js] ⚠️ THREE对象未加载！');
+				} else {
+					console.log('[Three.js] ✓ THREE对象已加载');
+				}
+				if (!window.THREE_LOADERS) {
+					console.warn('[Three.js] ⚠️ THREE_LOADERS未加载，等待中...');
+				} else {
+					console.log('[Three.js] ✓ THREE_LOADERS已加载:', Object.keys(window.THREE_LOADERS));
+				}
+			}, 1000);
+			});
+		
+		// 加载Whisper模型信息（用于显示KPI，与3D模型无关）
+		// 注意：这个调用的是 /models（Whisper模型），不是 /api/models（用户3D模型）
+		fetch('/models')
+			.then(r => r.json())
+			.then(d => {
+				const kpiModelEl = document.getElementById('kpi-model');
+				if (kpiModelEl && d && d.models) {
+					const defaultModel = 'large-v3-turbo';
+					const modelName = d.models[defaultModel]?.name || defaultModel;
+					kpiModelEl.textContent = modelName;
+					// 如果名称太长，调整字体大小
+					if (modelName.length > 20) {
+						kpiModelEl.style.fontSize = '16px';
+					}
+				}
+			})
+			.catch(() => {});
+		
+		// 3D模型管理
+		let userModels = [];
+		let currentModelId = null;
+		let isLoadingModel = false; // 防止重复加载
+		let loadTimeouts = []; // 存储所有定时器，便于清理
+		let tempUploadData = null; // 存储临时上传数据
+		
+		// Three.js 相关变量
+		let scene = null;
+		let camera = null;
+		let renderer = null;
+		let controls = null;
+		let currentModel = null;
+		let animationId = null;
+		let backgroundColor = 0x000000; // 默认黑色背景
+		let ambientLightColor = 0xffffff; // 默认白色环境光
+		let ambientLightIntensity = 1.0; // 默认环境光强度
+		let ambientLight = null; // 环境光对象
+		
+		// 获取token
+		function getToken() {
+			return localStorage.getItem('yuni_token');
+		}
+		
+		// 加载用户模型列表
+		function loadUserModels(skipActiveModelLoad = false) {
+			const token = getToken();
+			if (!token) {
+				console.log('未登录，无法加载模型');
+				return;
+			}
+			
+			console.log('[模型管理] 开始加载模型列表');
+			fetch('/api/models', {
+				headers: {
+					'Authorization': `Bearer ${token}`
+				}
+			})
+				.then(async r => {
+					if (!r.ok) {
+						const errorText = await r.text();
+						console.error('[模型管理] API返回错误:', r.status, errorText);
+						throw new Error(`HTTP ${r.status}: ${errorText}`);
+					}
+					return r.json();
+				})
+				.then(data => {
+					console.log('[模型管理] 模型列表数据:', data);
+					console.log('[模型管理] data类型:', typeof data);
+					console.log('[模型管理] data.models类型:', typeof data?.models);
+					console.log('[模型管理] data.models是否为数组:', Array.isArray(data?.models));
+					
+					// 确保返回的数据是数组（只接受数组格式，不接受对象格式）
+					if (data && data.models) {
+						if (Array.isArray(data.models)) {
+							// 验证数组中的每个元素都是3D模型对象（有id、filename、file_path等字段）
+							// 过滤掉Whisper模型（Whisper模型是对象格式，没有id字段）
+							userModels = data.models.filter(m => {
+								// 3D模型应该有id、filename、file_path等字段
+								const is3DModel = m && typeof m === 'object' && 
+									('id' in m || 'filename' in m || 'file_path' in m || 'stored_filename' in m);
+								if (!is3DModel) {
+									console.warn('[模型管理] 过滤掉非3D模型对象:', m);
+								}
+								return is3DModel;
+							});
+							console.log('[模型管理] 成功加载', userModels.length, '个3D模型');
+							userModels.forEach((m, i) => {
+								console.log(`[模型管理] 3D模型 ${i + 1}:`, {
+									id: m.id,
+									name: m.name || m.filename,
+									filename: m.filename,
+									file_path: m.file_path,
+									is_active: m.is_active
+								});
+							});
+						} else {
+							// 如果是对象格式，这可能是Whisper模型数据，不应该填充到userModels
+							console.error('[模型管理] 错误：返回的数据是对象格式（可能是Whisper模型），不是3D模型数组');
+							console.error('[模型管理] 请检查后端 /api/models 接口是否正确返回用户3D模型数组');
+							userModels = [];
+						}
+					} else {
+						console.warn('[模型管理] 返回的数据格式不正确:', data);
+						userModels = [];
+					}
+					console.log('[模型管理] 模型数量:', userModels.length);
+					
+					// 更新选择器，显示所有用户模型供选择
+					updateModelSelect(false);
+					
+					// 如果没有模型，确保背景是白色
+					if (userModels.length === 0) {
+						const wrapper = document.querySelector('.model-viewer-wrapper');
+						if (wrapper) {
+							wrapper.classList.remove('has-model');
+						}
+					}
+					
+					// 只有在没有跳过时才调用 loadActiveModel（避免重复加载）
+					if (!skipActiveModelLoad && !isLoadingModel) {
+						console.log('[模型管理] 准备加载激活模型');
+					loadActiveModel();
+					} else {
+						console.log('[模型管理] 跳过加载激活模型 (skipActiveModelLoad:', skipActiveModelLoad, ', isLoadingModel:', isLoadingModel, ')');
+					}
+				})
+				.catch(error => {
+					console.error('[模型管理] 加载模型列表失败:', error);
+				});
+		}
+		
+		// 更新模型选择器
+		function updateModelSelect(showActiveModel = true) {
+			const select = document.getElementById('modelSelect');
+			if (!select) return;
+			
+			// 确保 userModels 是数组
+			if (!Array.isArray(userModels)) {
+				console.warn('[模型管理] userModels 不是数组，重置为空数组');
+				userModels = [];
+			}
+			
+			// 保存当前选择的值
+			const currentValue = select.value;
+			
+			select.innerHTML = '<option value="">选择模型...</option>';
+			
+			let activeModel = null;
+			userModels.forEach(model => {
+				const option = document.createElement('option');
+				option.value = model.id;
+				// 显示用户设置的名称，如果没有则显示文件名
+				const displayName = (model.name && model.name.trim()) ? model.name : model.filename;
+				option.textContent = displayName + (model.is_active ? ' (当前展示)' : '');
+				if (model.is_active) {
+					option.selected = true;
+					currentModelId = model.id;
+					activeModel = model;
+				}
+				select.appendChild(option);
+			});
+			
+			// 如果之前有选择的值，恢复它（避免触发change事件）
+			if (currentValue && !activeModel) {
+				select.value = currentValue;
+				currentModelId = parseInt(currentValue);
+			}
+			
+			// 更新删除按钮状态
+			const deleteBtn = document.getElementById('deleteBtn');
+			if (deleteBtn) {
+				const hasModel = currentModelId && userModels.some(m => m.id === currentModelId);
+				deleteBtn.disabled = !hasModel;
+				console.log('[模型管理] 删除按钮状态更新:', !hasModel ? '禁用' : '启用', 'currentModelId:', currentModelId);
+			}
+			
+			// 如果找到激活的模型且需要显示，直接显示
+			if (activeModel && showActiveModel && !isLoadingModel) {
+				console.log('[模型管理] 在模型列表中找到激活模型，直接显示:', activeModel);
+				displayModel(activeModel);
+			} else if (!activeModel && showActiveModel) {
+				console.log('[模型管理] 模型列表中没有激活的模型');
+				hideModel();
+			}
+		}
+		
+		// 加载当前激活的模型
+		function loadActiveModel() {
+			const token = getToken();
+			if (!token) {
+				console.log('[模型管理] 未登录，无法加载激活模型');
+				return;
+			}
+			
+			console.log('[模型管理] 开始加载激活模型');
+			fetch('/api/models/active', {
+				headers: {
+					'Authorization': `Bearer ${token}`
+				}
+			})
+				.then(async r => {
+					if (!r.ok) {
+						if (r.status === 401) {
+							console.warn('[模型管理] 401未授权，可能是token过期，跳过加载激活模型');
+							hideModel();
+							return null;
+						}
+						const errorText = await r.text();
+						console.error('[模型管理] 加载激活模型失败:', r.status, errorText);
+						throw new Error(`HTTP ${r.status}: ${errorText}`);
+					}
+					return r.json();
+				})
+				.then(data => {
+					if (!data) return; // 401错误时返回null，直接返回
+					console.log('[模型管理] 激活模型数据:', data);
+					if (data.model) {
+						console.log('[模型管理] 找到激活模型，准备显示:', data.model);
+						displayModel(data.model);
+					} else {
+						console.log('[模型管理] 没有激活的模型');
+						hideModel();
+					}
+				})
+				.catch(error => {
+					console.error('[模型管理] 加载激活模型失败:', error);
+					hideModel();
+				});
+		}
+		
+		// 初始化Three.js场景 - 旧版本已移除，使用下面的新版本
+			
+			// 创建场景
+			scene = new THREE.Scene();
+			// 确保 backgroundColor 已定义，如果没有则使用默认值
+			if (typeof backgroundColor === 'undefined') {
+				backgroundColor = 0x000000; // 默认黑色
+			}
+			scene.background = new THREE.Color(backgroundColor); // 可动态调整的背景颜色
+			
+			// 创建相机
+			camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+			camera.position.set(0, 0, 5);
+			
+			// 创建渲染器
+			renderer = new THREE.WebGLRenderer({ 
+				canvas: canvas,
+				antialias: true,
+				alpha: false,  // 使用黑色背景
+				powerPreference: "high-performance" // 高性能模式
+			});
+			renderer.setSize(width, height);
+			renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // 限制像素比，提高性能
+			renderer.shadowMap.enabled = true;
+			renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+			
+			console.log('[Three.js] 渲染器已创建，尺寸:', width, 'x', height, '像素比:', renderer.getPixelRatio());
+			
+			// 添加光源 - 灰白色环境光（可动态调整）
+			// 确保环境光变量已定义
+			if (typeof ambientLightColor === 'undefined') {
+				ambientLightColor = 0xffffff;
+			}
+			if (typeof ambientLightIntensity === 'undefined') {
+				ambientLightIntensity = 1.0;
+			}
+			ambientLight = new THREE.AmbientLight(ambientLightColor, ambientLightIntensity);
+			scene.add(ambientLight);
+			
+			// 添加方向光增强细节
+			const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+			directionalLight.position.set(5, 5, 5);
+			directionalLight.castShadow = false; // 关闭阴影以提高性能
+			scene.add(directionalLight);
+			
+			// 添加补充光源，确保模型各个角度都有光照
+			const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.3);
+			directionalLight2.position.set(-5, -5, -5);
+			scene.add(directionalLight2);
+			
+			// 添加轨道控制器（等待模块加载）- 参考Sketchfab的设计
+			if (window.THREE_LOADERS && window.THREE_LOADERS.OrbitControls) {
+				controls = new window.THREE_LOADERS.OrbitControls(camera, renderer.domElement);
+				controls.enableDamping = true;
+				controls.dampingFactor = 0.1; // 更平滑的阻尼效果
+				
+				// 配置鼠标按钮：左键旋转，右键平移，中键（滚轮按下）平移
+				// 确保 THREE.MOUSE 可用
+				if (THREE.MOUSE) {
+					controls.mouseButtons = {
+						LEFT: THREE.MOUSE.ROTATE,      // 左键：旋转
+						MIDDLE: THREE.MOUSE.PAN,        // 中键（滚轮按下）：平移
+						RIGHT: THREE.MOUSE.PAN          // 右键：平移
+					};
+					console.log('[Three.js] 鼠标按钮配置：左键旋转，右键平移，中键平移');
+				} else {
+					console.warn('[Three.js] THREE.MOUSE 未定义，使用默认鼠标按钮配置');
+				}
+				controls.autoRotate = false; // 关闭自动旋转，让用户手动控制
+				controls.enableZoom = true;
+				controls.enablePan = true;
+				controls.enableRotate = true; // 确保可以旋转
+				controls.minDistance = 0.1; // 允许非常近的距离（可以放大到很大）
+				controls.maxDistance = 1000; // 允许很远的距离
+				controls.screenSpacePanning = false; // 使用标准平移（类似Sketchfab）
+				controls.rotateSpeed = 1.0; // 旋转速度
+				controls.zoomSpeed = 1.2; // 缩放速度
+				controls.panSpeed = 0.8; // 平移速度
+				console.log('[Three.js] 轨道控制器已创建，支持鼠标拖动旋转和缩放');
+			} else {
+				console.warn('[Three.js] OrbitControls 未加载，将使用基础控制');
+			}
+			
+			// 处理窗口大小变化
+			window.addEventListener('resize', onWindowResize);
+			
+			// 设置模型显示区域的滚动控制：禁用页面滚动，保留Three.js操作
+			setupModelViewerScrollControl();
+			
+			console.log('[Three.js] 场景初始化成功');
+			return true;
+		}
+		
+		// 设置模型展示区域的滚动控制：禁用页面滚动，保留Three.js操作
+		function setupModelViewerScrollControl() {
+			const wrapper = document.querySelector('.model-viewer-wrapper');
+			if (!wrapper) {
+				console.warn('[滚动控制] 未找到模型展示区域');
+				return;
+			}
+			
+			let isMouseInWrapper = false;
+			
+			// 当鼠标进入模型展示区域时，禁用页面滚动
+			wrapper.addEventListener('mouseenter', function() {
+				isMouseInWrapper = true;
+				console.log('[滚动控制] 鼠标进入模型展示区域，禁用页面滚动');
+				// 添加样式类，可以用于CSS样式调整
+				wrapper.classList.add('model-interactive');
+			});
+			
+			// 当鼠标离开模型展示区域时，恢复页面滚动
+			wrapper.addEventListener('mouseleave', function() {
+				isMouseInWrapper = false;
+				console.log('[滚动控制] 鼠标离开模型展示区域，恢复页面滚动');
+				wrapper.classList.remove('model-interactive');
+			});
+			
+			// 在wrapper上监听滚轮事件，阻止冒泡到document/body
+			wrapper.addEventListener('wheel', function(e) {
+				if (!isMouseInWrapper) return;
+				
+				const target = e.target;
+				const canvas = document.getElementById('threeCanvas');
+				
+				// 如果滚轮事件发生在canvas上，允许Three.js的OrbitControls处理
+				// 但阻止事件冒泡到document/body，防止页面滚动
+				if (target === canvas || (canvas && canvas.contains(target))) {
+					// 阻止事件冒泡到document，防止页面滚动
+					// 但允许Three.js的OrbitControls处理（它在canvas上监听）
+					e.stopPropagation();
+					// 不阻止默认行为，让OrbitControls处理缩放
+					return;
+				}
+				
+				// 如果事件发生在设置面板或其他元素上，阻止默认行为和冒泡
+				if (target.closest('.model-settings-panel') || target.closest('.model-controls-hint')) {
+					e.preventDefault();
+					e.stopPropagation();
+				} else {
+					// 如果鼠标在wrapper内但不在canvas上，也阻止页面滚动
+					e.preventDefault();
+					e.stopPropagation();
+				}
+			}, { passive: false, capture: true });
+			
+			// 在document上监听滚轮事件，如果鼠标在wrapper内则阻止默认行为
+			document.addEventListener('wheel', function(e) {
+				if (!isMouseInWrapper) return;
+				
+				const target = e.target;
+				const canvas = document.getElementById('threeCanvas');
+				
+				// 如果滚轮事件发生在wrapper内的任何元素上，阻止页面滚动
+				// 但允许Three.js的OrbitControls处理canvas上的滚轮事件
+				if (wrapper && wrapper.contains(target)) {
+					// 如果是在canvas上，不阻止默认行为（让OrbitControls处理）
+					if (target === canvas || (canvas && canvas.contains(target))) {
+						// OrbitControls会处理缩放，我们只需要阻止冒泡到body
+						e.stopPropagation();
+						return;
+					}
+					// 如果是在wrapper内的其他元素上，阻止页面滚动
+					e.preventDefault();
+					e.stopPropagation();
+				}
+			}, { passive: false });
+			
+			// 禁用右键菜单（可选，避免干扰模型操作）
+			wrapper.addEventListener('contextmenu', function(e) {
+				const target = e.target;
+				const canvas = document.getElementById('threeCanvas');
+				// 如果是在canvas上，禁用右键菜单（OrbitControls使用右键平移）
+				if (target === canvas || (canvas && canvas.contains(target))) {
+					e.preventDefault();
+				}
+			});
+			
+			// 禁用文本选择（避免拖动时选中文本）
+			wrapper.addEventListener('selectstart', function(e) {
+				const target = e.target;
+				const canvas = document.getElementById('threeCanvas');
+				// 如果是在canvas上，禁用文本选择
+				if (target === canvas || (canvas && canvas.contains(target))) {
+					e.preventDefault();
+				}
+			});
+			
+			console.log('[滚动控制] 模型展示区域滚动控制已设置');
+		}
+		
+		// 窗口大小变化处理
+		function onWindowResize() {
+			// 如果正在全屏，更新渲染器尺寸
+			const wrapper = document.querySelector('.model-viewer-wrapper');
+			if (wrapper && wrapper.classList.contains('fullscreen')) {
+				if (renderer && camera) {
+					const newWidth = window.innerWidth;
+					const newHeight = window.innerHeight;
+					
+					if (newWidth > 0 && newHeight > 0) {
+						renderer.setSize(newWidth, newHeight);
+						camera.aspect = newWidth / newHeight;
+						camera.updateProjectionMatrix();
+						
+						if (controls) {
+							controls.update();
+						}
+						
+						// 强制渲染一次
+						if (scene && camera) {
+							renderer.render(scene, camera);
+						}
+					}
+				}
+			}
+			// 如果不在全屏模式，更新正常模式的尺寸
+			if (!wrapper || !wrapper.classList.contains('fullscreen')) {
+				if (!camera || !renderer) return;
+				
+				const canvas = document.getElementById('threeCanvas');
+				if (!canvas) return;
+				
+				const wrapper = canvas.parentElement;
+				const width = wrapper ? wrapper.clientWidth : canvas.clientWidth || 800;
+				const height = wrapper ? wrapper.clientHeight : canvas.clientHeight || 500;
+				
+				if (width > 0 && height > 0) {
+					camera.aspect = width / height;
+					camera.updateProjectionMatrix();
+					renderer.setSize(width, height);
+					if (controls) controls.update();
+				}
+			}
+		}
+		
+		// 动画循环
+		function animate() {
+			if (!renderer || !scene || !camera) {
+				console.warn('[Three.js] 动画循环：场景未初始化，跳过');
+				return;
+			}
+			
+			animationId = requestAnimationFrame(animate);
+			
+			if (controls) {
+				controls.update();
+			}
+			
+			// 确保canvas可见时才渲染
+			const canvas = document.getElementById('threeCanvas');
+			if (canvas && canvas.style.display !== 'none') {
+				renderer.render(scene, camera);
+			}
+		}
+		
+		// 清理Three.js资源
+		function disposeThreeJS() {
+			// 停止动画
+			if (animationId) {
+				cancelAnimationFrame(animationId);
+				animationId = null;
+			}
+			
+			// 清理模型
+			if (currentModel) {
+				scene.remove(currentModel);
+				currentModel.traverse((child) => {
+					if (child.geometry) child.geometry.dispose();
+					if (child.material) {
+						if (Array.isArray(child.material)) {
+							child.material.forEach(m => m.dispose());
+						} else {
+							child.material.dispose();
+						}
+					}
+				});
+				currentModel = null;
+			}
+			
+			// 清理控制器
+			if (controls) {
+				controls.dispose();
+				controls = null;
+			}
+			
+			// 清理渲染器
+			if (renderer) {
+				renderer.dispose();
+				renderer = null;
+			}
+			
+			scene = null;
+			camera = null;
+		}
+		
+		// 显示模型
+		function displayModel(model) {
+			// 防止重复加载同一个模型
+			if (isLoadingModel && currentModelId === model.id) {
+				console.log('[模型管理] 模型正在加载中，跳过重复加载');
+				return;
+			}
+			
+			// 如果正在加载其他模型，先清理
+			if (isLoadingModel) {
+				console.log('[模型管理] 正在加载其他模型，清理当前加载状态');
+				clearAllLoadTimeouts();
+				hideModelLoadingProgress();
+				isLoadingModel = false;
+			}
+			
+			// 立即设置currentModelId，确保删除按钮可以工作（确保是整数）
+			currentModelId = typeof model.id === 'number' ? model.id : parseInt(model.id);
+			console.log('[模型管理] displayModel 被调用，模型数据:', model, 'currentModelId:', currentModelId, '类型:', typeof currentModelId);
+			
+			// 更新删除按钮状态
+			const deleteBtn = document.getElementById('deleteBtn');
+			if (deleteBtn) {
+				deleteBtn.disabled = false;
+				console.log('[模型管理] 删除按钮已启用，currentModelId:', currentModelId);
+			}
+			const canvas = document.getElementById('threeCanvas');
+			const modelLoading = document.getElementById('modelLoading');
+			
+			if (!canvas) {
+				console.error('[模型管理] 未找到 threeCanvas 元素');
+				return;
+			}
+			if (!modelLoading) {
+				console.error('[模型管理] 未找到 modelLoading 元素');
+				return;
+			}
+			
+			// 清理之前的加载定时器
+			clearAllLoadTimeouts();
+			
+			// 如果正在加载，先停止
+			if (isLoadingModel) {
+				console.log('[模型管理] 停止之前的加载');
+				isLoadingModel = false;
+			}
+			
+			isLoadingModel = true;
+			const modelUrl = model.file_path;
+			console.log('[模型管理] 设置模型URL:', modelUrl);
+			console.log('[模型管理] 模型完整信息:', JSON.stringify(model, null, 2));
+			
+			if (!modelUrl) {
+				console.error('[模型管理] 模型URL为空');
+				modelLoading.textContent = '模型URL无效';
+				modelLoading.style.color = '#ef4444';
+				modelLoading.style.display = 'block';
+				isLoadingModel = false;
+				return;
+			}
+			
+			modelLoading.textContent = '正在加载模型...';
+			modelLoading.style.color = '#5b6b8b';
+			modelLoading.style.display = 'block';
+			canvas.style.display = 'none';
+			
+			// 确保URL是完整的路径（file_path 应该已经是 /models/uid/filename 格式）
+			const fullUrl = modelUrl.startsWith('/') ? modelUrl : '/' + modelUrl;
+			console.log('[模型管理] 完整URL:', fullUrl);
+			
+			// 验证URL格式
+			if (!fullUrl.includes('/models/')) {
+				console.error('[模型管理] 模型URL格式错误，应该包含 /models/');
+				modelLoading.textContent = '模型URL格式错误';
+				modelLoading.style.color = '#ef4444';
+				isLoadingModel = false;
+				return;
+			}
+			
+			// 初始化Three.js（如果还没有初始化）
+			if (!scene || !camera || !renderer) {
+				console.log('[Three.js] 开始初始化Three.js场景');
+				const initResult = initThreeJS();
+				
+				// 如果返回Promise，等待它完成
+				if (initResult instanceof Promise) {
+					initResult
+						.then(() => {
+							console.log('[Three.js] 初始化完成，继续加载模型');
+							// 启动动画循环
+							if (!animationId) {
+								animate();
+							}
+							// 显示加载进度条
+							showModelLoadingProgress();
+							// 继续加载模型
+							loadModelWithThreeJS(fullUrl, modelLoading, model.id);
+						})
+						.catch((error) => {
+							console.error('[Three.js] 初始化失败:', error);
+							modelLoading.textContent = 'Three.js 初始化失败: ' + (error.message || '未知错误');
+							modelLoading.style.color = '#ef4444';
+							isLoadingModel = false;
+						});
+					return; // 等待Promise完成后再继续
+				} else if (!initResult) {
+					console.error('[Three.js] 初始化失败');
+					modelLoading.textContent = 'Three.js 初始化失败';
+					modelLoading.style.color = '#666666';
+					isLoadingModel = false;
+					return;
+				}
+				
+				// 启动动画循环
+				console.log('[Three.js] 启动动画循环');
+				if (!animationId) {
+					animate();
+				}
+			} else {
+				console.log('[Three.js] 场景已初始化，直接使用');
+				// 确保动画循环正在运行
+				if (!animationId) {
+					console.log('[Three.js] 重新启动动画循环');
+					animate();
+				}
+			}
+			
+			// 显示加载进度条（参考Sketchfab设计）
+			showModelLoadingProgress();
+			
+			// 加载模型
+			loadModelWithThreeJS(fullUrl, modelLoading, model.id);
+		}
+		
+		// 显示模型加载进度条（参考Sketchfab设计）
+		function showModelLoadingProgress() {
+			const canvas = document.getElementById('threeCanvas');
+			const wrapper = canvas ? canvas.parentElement : null;
+			if (!wrapper) return;
+			
+			// 创建或获取进度条容器
+			let progressContainer = wrapper.querySelector('.model-loading-progress');
+			if (!progressContainer) {
+				progressContainer = document.createElement('div');
+				progressContainer.className = 'model-loading-progress';
+				progressContainer.innerHTML = `
+					<div class="model-loading-spinner"></div>
+					<div class="model-loading-text">正在加载模型...</div>
+					<div class="model-loading-bar">
+						<div class="model-loading-bar-fill"></div>
+					</div>
+				`;
+				wrapper.appendChild(progressContainer);
+			}
+			
+			progressContainer.style.display = 'flex';
+			const barFill = progressContainer.querySelector('.model-loading-bar-fill');
+			const loadingText = progressContainer.querySelector('.model-loading-text');
+			
+			// 模拟进度（实际进度由加载器事件提供）
+			let progress = 0;
+			const progressInterval = setInterval(() => {
+				if (progress < 90) {
+					progress += Math.random() * 10;
+					if (progress > 90) progress = 90;
+					if (barFill) barFill.style.width = progress + '%';
+				}
+			}, 200);
+			
+			// 存储进度条引用，以便在加载完成时清除
+			window.modelLoadingProgress = {
+				container: progressContainer,
+				interval: progressInterval,
+				barFill: barFill,
+				loadingText: loadingText
+			};
+		}
+		
+		// 隐藏模型加载进度条
+		function hideModelLoadingProgress() {
+			if (window.modelLoadingProgress) {
+				if (window.modelLoadingProgress.interval) {
+					clearInterval(window.modelLoadingProgress.interval);
+				}
+				if (window.modelLoadingProgress.container) {
+					window.modelLoadingProgress.container.style.display = 'none';
+					// 重置进度
+					if (window.modelLoadingProgress.barFill) {
+						window.modelLoadingProgress.barFill.style.width = '0%';
+					}
+				}
+				window.modelLoadingProgress = null;
+			}
+		}
+		
+		// 清理所有加载定时器
+		function clearAllLoadTimeouts() {
+			loadTimeouts.forEach(timeout => {
+				if (timeout) {
+					clearTimeout(timeout);
+					clearInterval(timeout);
+				}
+			});
+			loadTimeouts = [];
+		}
+		
+		// 初始化Three.js场景（确保THREE已加载）
+		function initThreeJS() {
+			console.log('[Three.js] 开始初始化Three.js场景');
+			
+			// 检查THREE是否已加载
+			if (typeof THREE === 'undefined' || !window.THREE) {
+				console.error('[Three.js] THREE未定义，等待加载...');
+				// 等待THREE加载
+				return new Promise((resolve, reject) => {
+					let checkCount = 0;
+					const maxChecks = 50; // 最多等待5秒
+					
+					const checkTHREE = () => {
+						checkCount++;
+						if (typeof THREE !== 'undefined' && window.THREE) {
+							console.log('[Three.js] THREE已加载，继续初始化');
+							initThreeJSScene();
+							resolve(true);
+							return;
+						}
+						
+						if (checkCount >= maxChecks) {
+							console.error('[Three.js] THREE加载超时');
+							reject(new Error('THREE.js加载超时'));
+							return;
+						}
+						
+						setTimeout(checkTHREE, 100);
+					};
+					
+					// 监听threejs-loaded事件
+					const onLoaded = () => {
+						console.log('[Three.js] 收到threejs-loaded事件');
+						if (typeof THREE !== 'undefined' && window.THREE) {
+							initThreeJSScene();
+							resolve(true);
+						}
+					};
+					window.addEventListener('threejs-loaded', onLoaded, { once: true });
+					
+					// 开始检查
+					checkTHREE();
+				});
+			}
+			
+			// THREE已加载，直接初始化
+			initThreeJSScene();
+			return true;
+		}
+		
+		// 实际的Three.js场景初始化函数
+		function initThreeJSScene() {
+			// 确保THREE已加载
+			if (typeof THREE === 'undefined' || !window.THREE) {
+				console.error('[Three.js] initThreeJSScene: THREE未定义，无法初始化场景');
+				throw new Error('THREE is not defined');
+			}
+			
+			if (scene && renderer && camera) {
+				console.log('[Three.js] 场景已初始化，跳过重复初始化');
+				return;
+			}
+			
+			console.log('[Three.js] 初始化Three.js场景');
+			const canvas = document.getElementById('threeCanvas');
+			if (!canvas) {
+				console.error('[Three.js] 未找到canvas元素');
+				return;
+			}
+			
+			const wrapper = canvas.parentElement;
+			const width = wrapper ? wrapper.clientWidth : 800;
+			const height = wrapper ? wrapper.clientHeight : 500;
+			
+			console.log('[Three.js] Canvas尺寸:', width, 'x', height, 'wrapper尺寸:', wrapper ? wrapper.clientWidth + 'x' + wrapper.clientHeight : 'N/A');
+			
+			// 创建场景
+			scene = new THREE.Scene();
+			scene.background = new THREE.Color(backgroundColor);
+			
+			// 创建相机
+			camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+			camera.position.set(0, 0, 5);
+			
+			// 创建渲染器
+			renderer = new THREE.WebGLRenderer({ 
+				canvas: canvas, 
+				antialias: true,
+				alpha: false
+			});
+			renderer.setSize(width, height);
+			renderer.setPixelRatio(window.devicePixelRatio);
+			
+			// 创建环境光
+			ambientLight = new THREE.AmbientLight(ambientLightColor, ambientLightIntensity);
+			scene.add(ambientLight);
+			
+			// 创建轨道控制器
+			if (window.THREE_LOADERS && window.THREE_LOADERS.OrbitControls) {
+				controls = new window.THREE_LOADERS.OrbitControls(camera, canvas);
+				controls.enableDamping = true;
+				controls.dampingFactor = 0.05;
+				controls.enableZoom = true;
+				controls.enablePan = true;
+				controls.enableRotate = true;
+			}
+			
+			// 动画循环
+			function animate() {
+				requestAnimationFrame(animate);
+				if (controls) controls.update();
+				if (renderer && scene && camera) {
+					renderer.render(scene, camera);
+				}
+			}
+			animate();
+			
+			console.log('[Three.js] Three.js场景初始化完成');
+		}
+		
+		// 使用Three.js加载模型
+		function loadModelWithThreeJS(fullUrl, modelLoading, modelId) {
+			// 确保currentModelId已设置
+			if (!currentModelId) {
+				currentModelId = modelId;
+				console.log('[模型管理] 在loadModelWithThreeJS中设置currentModelId:', currentModelId);
+			}
+			
+			// 设置加载超时（60秒，大文件可能需要更长时间）
+			const loadTimeout = setTimeout(() => {
+				console.error('[Three.js] 模型加载超时（60秒）');
+				isLoadingModel = false;
+				clearAllLoadTimeouts();
+				hideModelLoadingProgress();
+				
+				modelLoading.textContent = '模型加载超时，请检查文件大小和网络连接';
+				modelLoading.style.color = '#ef4444';
+				modelLoading.style.display = 'block';
+				
+				const canvas = document.getElementById('threeCanvas');
+				if (canvas) {
+					canvas.style.display = 'none';
+				}
+				
+				// 清理加载器
+				if (loader && loader.manager) {
+					try {
+						loader.manager.removeHandler(loader.manager.getHandler(''));
+					} catch (e) {
+						console.error('[Three.js] 清理加载器失败:', e);
+					}
+				}
+			}, 60000);
+			loadTimeouts.push(loadTimeout);
+			
+			// 检查加载器是否可用（支持多种格式）
+			const fileExt = fullUrl.toLowerCase().split('.').pop();
+			let requiredLoader = 'GLTFLoader'; // 默认
+			
+			if (fileExt === 'obj') requiredLoader = 'OBJLoader';
+			else if (fileExt === 'fbx') requiredLoader = 'FBXLoader';
+			else if (fileExt === 'stl') requiredLoader = 'STLLoader';
+			else if (fileExt === 'ply') requiredLoader = 'PLYLoader';
+			else if (fileExt === 'dae') requiredLoader = 'ColladaLoader';
+			
+			if (!window.THREE_LOADERS || !window.THREE_LOADERS[requiredLoader]) {
+				console.log('[Three.js]', requiredLoader, '未加载，等待模块加载...');
+				console.log('[Three.js] 当前THREE_LOADERS状态:', window.THREE_LOADERS ? Object.keys(window.THREE_LOADERS) : 'null');
+				modelLoading.textContent = '正在加载Three.js模块...';
+				
+				// 等待模块加载（使用事件监听和轮询双重机制）
+				let checkCount = 0;
+				const maxChecks = 50; // 最多等待5秒
+				
+				const checkLoader = () => {
+					checkCount++;
+					if (window.THREE_LOADERS && window.THREE_LOADERS[requiredLoader]) {
+						console.log('[Three.js]', requiredLoader, '已加载，继续加载模型');
+						loadModelWithThreeJS(fullUrl, modelLoading, modelId);
+						return;
+					}
+					
+					if (checkCount >= maxChecks) {
+						console.error('[Three.js]', requiredLoader, '加载超时');
+						console.error('[Three.js] THREE_LOADERS状态:', window.THREE_LOADERS);
+						modelLoading.textContent = 'Three.js加载器加载失败，请刷新页面重试';
+						modelLoading.style.color = '#666666';
+						isLoadingModel = false;
+						clearAllLoadTimeouts();
+						return;
+					}
+					
+					setTimeout(checkLoader, 100);
+				};
+				
+				// 监听加载完成事件
+				const onLoaded = () => {
+					if (window.THREE_LOADERS && window.THREE_LOADERS[requiredLoader]) {
+						console.log('[Three.js] 通过事件监听到模块加载完成');
+						loadModelWithThreeJS(fullUrl, modelLoading, modelId);
+					}
+				};
+				window.addEventListener('threejs-loaded', onLoaded, { once: true });
+				
+				// 开始轮询检查
+				checkLoader();
+				return;
+			}
+			
+			// 清理之前的模型
+			if (currentModel) {
+				scene.remove(currentModel);
+				currentModel.traverse((child) => {
+					if (child.geometry) child.geometry.dispose();
+					if (child.material) {
+						if (Array.isArray(child.material)) {
+							child.material.forEach(m => m.dispose());
+						} else {
+							child.material.dispose();
+						}
+					}
+				});
+				currentModel = null;
+			}
+			
+			// 根据文件扩展名选择加载器（使用之前检测的fileExt）
+			let loader = null;
+			let loaderName = '';
+			
+			console.log('[Three.js] 检测文件扩展名:', fileExt, '完整URL:', fullUrl);
+			
+			switch(fileExt) {
+				case 'gltf':
+				case 'glb':
+					if (window.THREE_LOADERS.GLTFLoader) {
+						loader = new window.THREE_LOADERS.GLTFLoader();
+						loaderName = 'GLTFLoader';
+					}
+					break;
+				case 'obj':
+					if (window.THREE_LOADERS.OBJLoader) {
+						loader = new window.THREE_LOADERS.OBJLoader();
+						loaderName = 'OBJLoader';
+					}
+					break;
+				case 'fbx':
+					if (window.THREE_LOADERS.FBXLoader) {
+						loader = new window.THREE_LOADERS.FBXLoader();
+						loaderName = 'FBXLoader';
+					}
+					break;
+				case 'stl':
+					if (window.THREE_LOADERS.STLLoader) {
+						loader = new window.THREE_LOADERS.STLLoader();
+						loaderName = 'STLLoader';
+					}
+					break;
+				case 'ply':
+					if (window.THREE_LOADERS.PLYLoader) {
+						loader = new window.THREE_LOADERS.PLYLoader();
+						loaderName = 'PLYLoader';
+					}
+					break;
+				case 'dae':
+					if (window.THREE_LOADERS.ColladaLoader) {
+						loader = new window.THREE_LOADERS.ColladaLoader();
+						loaderName = 'ColladaLoader';
+					}
+					break;
+				default:
+					// 默认使用GLTFLoader
+					if (window.THREE_LOADERS.GLTFLoader) {
+						loader = new window.THREE_LOADERS.GLTFLoader();
+						loaderName = 'GLTFLoader (默认)';
+					}
+			}
+			
+			if (!loader) {
+				console.error('[Three.js] 未找到合适的加载器，文件扩展名:', fileExt);
+				modelLoading.textContent = '不支持的文件格式: .' + fileExt;
+				modelLoading.style.color = '#ef4444';
+				modelLoading.style.display = 'block';
+				isLoadingModel = false;
+				clearAllLoadTimeouts();
+				return;
+			}
+			
+			console.log('[Three.js] 使用加载器:', loaderName, '开始加载模型:', fullUrl);
+			console.log('[Three.js] THREE对象状态:', typeof THREE !== 'undefined' ? '已加载' : '未加载');
+			console.log('[Three.js] 场景状态:', scene ? '已初始化' : '未初始化');
+			
+			// 配置加载器管理器（用于进度跟踪）
+			if (loader.manager) {
+				loader.manager.onLoad = function() {
+					console.log('[Three.js] 加载管理器：所有资源加载完成');
+				};
+				loader.manager.onProgress = function(url, itemsLoaded, itemsTotal) {
+					const progress = (itemsLoaded / itemsTotal) * 100;
+					console.log('[Three.js] 加载管理器进度:', progress.toFixed(1) + '%', `(${itemsLoaded}/${itemsTotal})`);
+					if (window.modelLoadingProgress && window.modelLoadingProgress.barFill) {
+						window.modelLoadingProgress.barFill.style.width = progress + '%';
+					}
+					if (window.modelLoadingProgress && window.modelLoadingProgress.loadingText) {
+						window.modelLoadingProgress.loadingText.textContent = `正在加载模型... ${Math.round(progress)}%`;
+					}
+				};
+				loader.manager.onError = function(url) {
+					console.error('[Three.js] 加载管理器错误:', url);
+				};
+			}
+			
+			// 统一处理加载成功回调
+			const onLoadSuccess = (result) => {
+				console.log('[Three.js] 模型加载成功，结果对象:', result);
+				clearAllLoadTimeouts();
+				isLoadingModel = false;
+				
+				// 完成进度条
+				if (window.modelLoadingProgress && window.modelLoadingProgress.barFill) {
+					window.modelLoadingProgress.barFill.style.width = '100%';
+					if (window.modelLoadingProgress.loadingText) {
+						window.modelLoadingProgress.loadingText.textContent = '加载完成！';
+					}
+					// 延迟隐藏进度条
+					setTimeout(() => {
+						hideModelLoadingProgress();
+					}, 500);
+				}
+				
+				// 不同加载器返回的对象结构不同
+				let modelScene = null;
+				
+				if (loaderName === 'GLTFLoader') {
+					// GLTFLoader返回 { scene, animations, cameras, asset, parser, userData }
+					if (!result || !result.scene) {
+						console.error('[Three.js] GLTF场景不存在');
+						modelLoading.textContent = '模型数据格式错误';
+						modelLoading.style.color = '#666666';
+						modelLoading.style.display = 'block';
+						return;
+					}
+					modelScene = result.scene;
+				} else if (loaderName === 'OBJLoader' || loaderName === 'STLLoader' || loaderName === 'PLYLoader') {
+					// 这些加载器直接返回Object3D
+					modelScene = result;
+				} else if (loaderName === 'FBXLoader') {
+					// FBXLoader返回Object3D
+					modelScene = result;
+				} else if (loaderName === 'ColladaLoader') {
+					// ColladaLoader返回 { scene, animations }
+					modelScene = result.scene || result;
+				}
+				
+				if (!modelScene) {
+					console.error('[Three.js] 无法从加载结果中提取场景对象');
+					modelLoading.textContent = '模型数据格式错误';
+					modelLoading.style.color = '#666666';
+					modelLoading.style.display = 'block';
+					return;
+				}
+				
+				currentModel = modelScene;
+				console.log('[Three.js] 模型场景对象:', currentModel);
+				
+				// 计算模型边界框，调整相机位置
+				try {
+					const box = new THREE.Box3().setFromObject(currentModel);
+					const center = box.getCenter(new THREE.Vector3());
+					const size = box.getSize(new THREE.Vector3());
+					const maxDim = Math.max(size.x, size.y, size.z);
+					
+					console.log('[Three.js] 模型边界框 - 中心:', center, '尺寸:', size, '最大维度:', maxDim);
+					
+					if (maxDim > 0) {
+						const fov = camera.fov * (Math.PI / 180);
+						let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2));
+						cameraZ *= 2.0; // 稍微远一点，让模型完整显示（类似Sketchfab）
+						
+						camera.position.set(center.x, center.y, center.z + cameraZ);
+						camera.lookAt(center);
+						
+						if (controls) {
+							controls.target.copy(center);
+							controls.update();
+						}
+						
+						console.log('[Three.js] 相机已定位到模型中心，距离:', cameraZ);
+					} else {
+						// 如果模型没有几何体，使用默认位置
+						camera.position.set(0, 0, 5);
+						camera.lookAt(0, 0, 0);
+						if (controls) {
+							controls.target.set(0, 0, 0);
+							controls.update();
+						}
+					}
+				} catch (e) {
+					console.error('[Three.js] 计算边界框失败:', e);
+					// 使用默认相机位置
+					camera.position.set(0, 0, 5);
+					camera.lookAt(0, 0, 0);
+					if (controls) {
+						controls.target.set(0, 0, 0);
+						controls.update();
+					}
+				}
+				
+				// 添加模型到场景
+				scene.add(currentModel);
+				console.log('[Three.js] 模型已添加到场景，场景子对象数量:', scene.children.length);
+				
+				// 确保渲染器已创建
+				if (!renderer) {
+					console.error('[Three.js] 渲染器未初始化');
+					modelLoading.textContent = '渲染器未初始化';
+					modelLoading.style.color = '#666666';
+					return;
+				}
+				
+				// 立即渲染一次，确保模型可见
+				try {
+					renderer.render(scene, camera);
+					console.log('[Three.js] 已执行初始渲染');
+				} catch (e) {
+					console.error('[Three.js] 渲染失败:', e);
+				}
+				
+				// 隐藏进度条（如果还在显示）
+				hideModelLoadingProgress();
+				
+				// 显示canvas，隐藏加载提示
+				const canvas = document.getElementById('threeCanvas');
+				if (canvas) {
+					// 先更新渲染器尺寸（因为canvas可能刚显示）
+					const wrapper = canvas.parentElement;
+					const newWidth = wrapper ? wrapper.clientWidth : canvas.clientWidth || 800;
+					const newHeight = wrapper ? wrapper.clientHeight : canvas.clientHeight || 500;
+					
+					if (newWidth > 0 && newHeight > 0) {
+						renderer.setSize(newWidth, newHeight);
+						camera.aspect = newWidth / newHeight;
+						camera.updateProjectionMatrix();
+						console.log('[Three.js] 更新渲染器尺寸:', newWidth, 'x', newHeight);
+					}
+					
+				modelLoading.style.display = 'none';
+					canvas.style.display = 'block';
+					canvas.style.visibility = 'visible';
+					canvas.style.opacity = '1';
+					
+					// 添加has-model类，显示黑色背景
+					if (wrapper) {
+						wrapper.classList.add('has-model');
+					}
+					
+					// 确保currentModelId已设置（双重保险）
+					if (!currentModelId && modelId) {
+						currentModelId = modelId;
+						console.log('[模型管理] 在模型加载成功后设置currentModelId:', currentModelId);
+					}
+					
+					// 更新删除按钮状态（确保已启用）
+					const deleteBtn = document.getElementById('deleteBtn');
+					if (deleteBtn && currentModelId) {
+						deleteBtn.disabled = false;
+						console.log('[模型管理] 模型加载成功后，删除按钮已启用，currentModelId:', currentModelId);
+					}
+					
+					// 显示工具栏和控制提示
+					const settingsBtn = document.getElementById('settingsBtn');
+					const fullscreenBtn = document.getElementById('fullscreenBtn');
+					const controlsHint = document.getElementById('controlsHint');
+					if (settingsBtn) {
+						settingsBtn.style.display = 'block';
+					}
+					if (fullscreenBtn) {
+						fullscreenBtn.style.display = 'block';
+					}
+					if (controlsHint) {
+						controlsHint.style.display = 'block';
+						controlsHint.style.opacity = '0.9';
+						// 5秒后自动隐藏提示
+						setTimeout(() => {
+							if (controlsHint) {
+								controlsHint.style.opacity = '0';
+								setTimeout(() => {
+									if (controlsHint) controlsHint.style.display = 'none';
+								}, 300);
+							}
+						}, 5000);
+					}
+					
+					console.log('[Three.js] Canvas已显示，实际尺寸:', canvas.clientWidth, 'x', canvas.clientHeight);
+					
+					// 立即渲染
+					if (renderer && scene && camera) {
+						renderer.render(scene, camera);
+						console.log('[Three.js] 立即渲染完成');
+					}
+					
+					// 延迟再次渲染，确保显示
+					setTimeout(() => {
+						if (renderer && scene && camera) {
+							const finalWidth = canvas.clientWidth || newWidth;
+							const finalHeight = canvas.clientHeight || newHeight;
+							if (finalWidth > 0 && finalHeight > 0) {
+								renderer.setSize(finalWidth, finalHeight);
+								camera.aspect = finalWidth / finalHeight;
+								camera.updateProjectionMatrix();
+							}
+							renderer.render(scene, camera);
+							console.log('[Three.js] 延迟渲染完成，最终尺寸:', finalWidth, 'x', finalHeight);
+						}
+					}, 200);
+				} else {
+					console.error('[Three.js] 未找到canvas元素');
+					modelLoading.textContent = '未找到显示区域';
+					modelLoading.style.color = '#666666';
+				}
+			};
+			
+			// 加载进度回调（更新进度条）
+			const onProgress = (xhr) => {
+				if (xhr && xhr.lengthComputable) {
+					const percentComplete = (xhr.loaded / xhr.total) * 100;
+					console.log('[Three.js] 加载进度:', percentComplete.toFixed(1) + '%', '已加载:', xhr.loaded, '总计:', xhr.total);
+					
+					// 更新进度条
+					if (window.modelLoadingProgress && window.modelLoadingProgress.barFill) {
+						window.modelLoadingProgress.barFill.style.width = percentComplete + '%';
+					}
+					if (window.modelLoadingProgress && window.modelLoadingProgress.loadingText) {
+						window.modelLoadingProgress.loadingText.textContent = `正在加载模型... ${Math.round(percentComplete)}%`;
+					}
+					
+					// 同时更新旧的加载提示（兼容）
+					modelLoading.textContent = `正在加载模型... ${Math.round(percentComplete)}%`;
+				} else {
+					console.log('[Three.js] 加载中... 已加载:', xhr ? xhr.loaded : '未知');
+					// 即使没有完整进度信息，也更新进度条（使用模拟进度）
+					if (window.modelLoadingProgress && window.modelLoadingProgress.barFill) {
+						const currentWidth = parseFloat(window.modelLoadingProgress.barFill.style.width) || 0;
+						if (currentWidth < 90) {
+							window.modelLoadingProgress.barFill.style.width = Math.min(currentWidth + 5, 90) + '%';
+						}
+					}
+				}
+			};
+			
+			// 加载错误回调
+			const onError = (error) => {
+				console.error('[Three.js] 模型加载失败:', error);
+				console.error('[Three.js] 失败的URL:', fullUrl);
+				console.error('[Three.js] 使用的加载器:', loaderName);
+				if (error.stack) {
+					console.error('[Three.js] 错误堆栈:', error.stack);
+				}
+				clearAllLoadTimeouts();
+				isLoadingModel = false;
+				
+				// 隐藏进度条
+				hideModelLoadingProgress();
+				
+				let errorMsg = '模型加载失败';
+				if (error.message) {
+					errorMsg += ': ' + error.message;
+				} else if (error.toString) {
+					errorMsg += ': ' + error.toString();
+				}
+				
+				modelLoading.textContent = errorMsg;
+				modelLoading.style.color = '#ef4444';
+				modelLoading.style.display = 'block';
+				
+				const canvas = document.getElementById('threeCanvas');
+				if (canvas) {
+					canvas.style.display = 'none';
+				}
+			};
+			
+			// 调用加载器的load方法
+			try {
+				console.log('[Three.js] 开始调用 loader.load()');
+				loader.load(fullUrl, onLoadSuccess, onProgress, onError);
+				console.log('[Three.js] loader.load() 调用完成（异步加载中）');
+			} catch (e) {
+				console.error('[Three.js] loader.load() 调用失败:', e);
+				onError(e);
+			}
+		}
+		
+		// 全屏切换函数 - 重新定义以覆盖占位符
+		window._toggleFullscreen = function() {
+			const wrapper = document.querySelector('.model-viewer-wrapper');
+			if (!wrapper) {
+				console.error('[全屏] 未找到wrapper元素');
+				return;
+			}
+			
+			const canvas = document.getElementById('threeCanvas');
+			if (!canvas) {
+				console.error('[全屏] 未找到canvas元素');
+				return;
+			}
+			
+			if (!renderer || !camera) {
+				console.warn('[全屏] 渲染器或相机未初始化，无法全屏');
+				alert('请先加载模型');
+				return;
+			}
+			
+			const isFullscreen = wrapper.classList.contains('fullscreen');
+			
+			if (isFullscreen) {
+				// 退出全屏
+				wrapper.classList.remove('fullscreen');
+				document.body.style.overflow = '';
+				document.documentElement.style.overflow = '';
+				console.log('[全屏] 退出全屏模式');
+				
+				// 移除ESC键监听器
+				if (wrapper._escKeyHandler) {
+					document.removeEventListener('keydown', wrapper._escKeyHandler);
+					wrapper._escKeyHandler = null;
+				}
+				
+				// 更新渲染器尺寸（延迟执行确保DOM更新完成）
+				setTimeout(() => {
+					const newWidth = wrapper.clientWidth || 800;
+					const newHeight = wrapper.clientHeight || 500;
+					
+					console.log('[全屏] 退出全屏，更新渲染器尺寸:', newWidth, 'x', newHeight);
+					
+					if (newWidth > 0 && newHeight > 0) {
+						renderer.setSize(newWidth, newHeight);
+						camera.aspect = newWidth / newHeight;
+						camera.updateProjectionMatrix();
+						
+						if (controls) {
+							controls.update();
+						}
+						
+						// 强制渲染一次
+						if (scene && camera) {
+							renderer.render(scene, camera);
+						}
+					}
+				}, 100);
+			} else {
+				// 进入全屏
+				wrapper.classList.add('fullscreen');
+				document.body.style.overflow = 'hidden';
+				document.documentElement.style.overflow = 'hidden';
+				console.log('[全屏] 进入全屏模式');
+				
+				// 立即更新渲染器尺寸，然后再次更新确保正确
+				const updateFullscreenSize = () => {
+					const newWidth = window.innerWidth;
+					const newHeight = window.innerHeight;
+					
+					console.log('[全屏] 更新渲染器尺寸:', newWidth, 'x', newHeight);
+					
+					if (newWidth > 0 && newHeight > 0) {
+						renderer.setSize(newWidth, newHeight);
+						camera.aspect = newWidth / newHeight;
+						camera.updateProjectionMatrix();
+						
+						if (controls) {
+							controls.update();
+						}
+						
+						// 强制渲染一次
+						if (scene && camera) {
+							renderer.render(scene, camera);
+						}
+					}
+				};
+				
+				// 立即更新
+				updateFullscreenSize();
+				
+				// 延迟再次更新确保DOM完全更新
+				setTimeout(updateFullscreenSize, 50);
+				setTimeout(updateFullscreenSize, 200);
+				
+				// 添加ESC键退出全屏的监听器
+				const handleEscKey = (e) => {
+					if (e.key === 'Escape' || e.keyCode === 27) {
+						if (wrapper.classList.contains('fullscreen')) {
+							toggleFullscreen();
+							e.preventDefault();
+							e.stopPropagation();
+						}
+					}
+				};
+				document.addEventListener('keydown', handleEscKey);
+				// 保存监听器引用，以便退出全屏时移除
+				wrapper._escKeyHandler = handleEscKey;
+			}
+		};
+		
+		// 切换设置面板 - 重新定义以覆盖占位符
+		window._toggleSettingsPanel = function() {
+			const panel = document.getElementById('settingsPanel');
+			if (!panel) return;
+			
+			if (panel.style.display === 'none' || !panel.style.display) {
+				panel.style.display = 'block';
+			} else {
+				panel.style.display = 'none';
+			}
+		};
+		
+		// 更新背景颜色 - 重新定义以覆盖占位符
+		window._updateBackgroundColor = function(color) {
+			backgroundColor = parseInt(color.replace('#', ''), 16);
+			
+			if (scene) {
+				scene.background = new THREE.Color(backgroundColor);
+				console.log('[Three.js] 背景颜色已更新:', color);
+			}
+			
+			// 更新文本输入框
+			const bgColorText = document.getElementById('bgColorText');
+			if (bgColorText && bgColorText.value !== color) {
+				bgColorText.value = color;
+			}
+			
+			// 更新颜色选择器
+			const bgColorPicker = document.getElementById('bgColorPicker');
+			if (bgColorPicker && bgColorPicker.value !== color) {
+				bgColorPicker.value = color;
+			}
+			
+			// 更新容器背景
+			const wrapper = document.querySelector('.model-viewer-wrapper');
+			if (wrapper) {
+				wrapper.style.background = color;
+			}
+			
+			// 重新渲染
+			if (renderer && scene && camera) {
+				renderer.render(scene, camera);
+			}
+		};
+		
+		// 更新环境光颜色 - 重新定义以覆盖占位符
+		window._updateAmbientColor = function(color) {
+			ambientLightColor = parseInt(color.replace('#', ''), 16);
+			
+			if (ambientLight) {
+				ambientLight.color = new THREE.Color(ambientLightColor);
+				console.log('[Three.js] 环境光颜色已更新:', color);
+			}
+			
+			// 更新文本输入框
+			const ambientColorText = document.getElementById('ambientColorText');
+			if (ambientColorText && ambientColorText.value !== color) {
+				ambientColorText.value = color;
+			}
+			
+			// 更新颜色选择器
+			const ambientColorPicker = document.getElementById('ambientColorPicker');
+			if (ambientColorPicker && ambientColorPicker.value !== color) {
+				ambientColorPicker.value = color;
+			}
+			
+			// 重新渲染
+			if (renderer && scene && camera) {
+				renderer.render(scene, camera);
+			}
+		};
+		
+		// 更新环境光亮度
+		window._updateAmbientBrightness = function(value) {
+			ambientLightIntensity = parseFloat(value);
+			
+			if (ambientLight) {
+				ambientLight.intensity = ambientLightIntensity;
+				console.log('[Three.js] 环境光亮度已更新:', ambientLightIntensity);
+			}
+			
+			// 更新显示值
+			const brightnessValue = document.getElementById('brightnessValue');
+			if (brightnessValue) {
+				brightnessValue.textContent = ambientLightIntensity.toFixed(1);
+			}
+			
+			// 重新渲染
+			if (renderer && scene && camera) {
+				renderer.render(scene, camera);
+			}
+		};
+		
+		// 监听ESC键退出全屏
+		document.addEventListener('keydown', function(e) {
+			if (e.key === 'Escape') {
+				const wrapper = document.querySelector('.model-viewer-wrapper');
+				if (wrapper && wrapper.classList.contains('fullscreen')) {
+					toggleFullscreen();
+				}
+			}
+		});
+		
+		// 隐藏模型
+		function hideModel() {
+			isLoadingModel = false;
+			clearAllLoadTimeouts();
+			const canvas = document.getElementById('threeCanvas');
+			const modelLoading = document.getElementById('modelLoading');
+			const settingsBtn = document.getElementById('settingsBtn');
+			const fullscreenBtn = document.getElementById('fullscreenBtn');
+			const settingsPanel = document.getElementById('settingsPanel');
+			
+			// 退出全屏（如果正在全屏）
+			const wrapper = document.querySelector('.model-viewer-wrapper');
+			if (wrapper && wrapper.classList.contains('fullscreen')) {
+				wrapper.classList.remove('fullscreen');
+				document.body.style.overflow = '';
+			}
+			
+			// 隐藏设置面板
+			if (settingsPanel) {
+				settingsPanel.style.display = 'none';
+			}
+			
+			// 清理Three.js资源
+			disposeThreeJS();
+			
+			if (canvas) canvas.style.display = 'none';
+			if (settingsBtn) settingsBtn.style.display = 'none';
+			if (fullscreenBtn) fullscreenBtn.style.display = 'none';
+			// 移除has-model类，显示白色背景
+			if (wrapper) {
+				wrapper.classList.remove('has-model');
+			}
+			
+			if (modelLoading) {
+				modelLoading.textContent = '暂无模型';
+				modelLoading.style.display = 'block';
+				modelLoading.style.color = '#5b6b8b';
+			}
+			currentModelId = null;
+		}
+		
+		// 模型选择器变化
+		const modelSelect = document.getElementById('modelSelect');
+		if (modelSelect) {
+			modelSelect.addEventListener('change', function() {
+				const modelId = parseInt(this.value);
+				console.log('[模型管理] 模型选择器变化，选择的ID:', modelId);
+				
+				// 更新 currentModelId
+				currentModelId = modelId || null;
+				
+				// 更新删除按钮状态
+				const deleteBtn = document.getElementById('deleteBtn');
+				if (deleteBtn) {
+					const hasModel = currentModelId && userModels.some(m => m.id === currentModelId);
+					deleteBtn.disabled = !hasModel;
+					console.log('[模型管理] 删除按钮状态更新:', !hasModel ? '禁用' : '启用', 'currentModelId:', currentModelId);
+				}
+				
+				if (!modelId) {
+					console.log('[模型管理] 未选择模型，隐藏当前模型');
+					hideModel();
+					return;
+				}
+				
+				// 确保 userModels 是数组
+				if (!Array.isArray(userModels)) {
+					console.warn('[模型管理] userModels 不是数组，重新加载列表');
+					loadUserModels();
+					return;
+				}
+				
+				const model = userModels.find(m => m.id === modelId);
+				console.log('[模型管理] 找到模型:', model);
+				if (model) {
+					console.log('[模型管理] 准备设置并显示模型:', model.filename);
+					// 先直接显示模型，然后设置为激活（跳过重新加载列表）
+					displayModel(model);
+					setActiveModel(modelId, true); // 传入 true 表示跳过重新加载
+				} else {
+					console.error('[模型管理] 未找到ID为', modelId, '的模型');
+					alert('未找到该模型');
+					// 重置选择
+					this.value = '';
+					currentModelId = null;
+					if (deleteBtn) deleteBtn.disabled = true;
+				}
+			});
+		} else {
+			console.error('[模型管理] 未找到模型选择器元素');
+		}
+		
+		// 设置激活模型
+		function setActiveModel(modelId, skipReload = false) {
+			const token = getToken();
+			if (!token) {
+				console.log('[模型管理] 未登录，无法设置激活模型');
+				return;
+			}
+			
+			console.log('[模型管理] 设置激活模型，ID:', modelId, 'skipReload:', skipReload);
+			fetch(`/api/models/${modelId}/set_active`, {
+				method: 'POST',
+				headers: {
+					'Authorization': `Bearer ${token}`
+				}
+			})
+				.then(r => r.json())
+				.then(data => {
+					console.log('[模型管理] 设置激活模型成功:', data);
+					// 更新本地模型列表中的激活状态（确保 userModels 是数组）
+					if (Array.isArray(userModels)) {
+						userModels.forEach(m => {
+							m.is_active = (m.id === modelId) ? 1 : 0;
+						});
+						// 更新选择器显示
+						updateModelSelect(false); // 不显示模型，因为已经显示了
+					} else {
+						console.warn('[模型管理] userModels 不是数组，重新加载列表');
+						userModels = [];
+					}
+					
+					// 只有在不跳过重新加载时才重新加载列表
+					if (!skipReload) {
+						loadUserModels(true); // 跳过激活模型加载，因为已经显示了
+					}
+				})
+				.catch(error => {
+					console.error('[模型管理] 设置激活模型失败:', error);
+					alert('设置失败: ' + (error.detail || error.message || '未知错误'));
+				});
+		}
+		
+		// 删除当前模型 - 重新定义以覆盖占位符
+		window._deleteCurrentModel = function() {
+			console.log('[模型管理] ========== deleteCurrentModel 被调用 ==========');
+			console.log('[模型管理] currentModelId:', currentModelId);
+			console.log('[模型管理] userModels:', userModels);
+			console.log('[模型管理] userModels长度:', userModels ? userModels.length : 0);
+			
+			// 如果没有currentModelId，尝试从选择器获取
+			if (!currentModelId) {
+				const modelSelect = document.getElementById('modelSelect');
+				if (modelSelect && modelSelect.value) {
+					currentModelId = parseInt(modelSelect.value);
+					console.log('[模型管理] 从选择器获取currentModelId:', currentModelId);
+				}
+			}
+			
+			if (!currentModelId) {
+				console.warn('[模型管理] 没有当前模型ID，无法删除');
+				alert('请先选择一个模型');
+				return;
+			}
+			
+			// 如果userModels为空，先尝试重新加载
+			if (!Array.isArray(userModels) || userModels.length === 0) {
+				console.warn('[模型管理] userModels为空，尝试重新加载');
+				// 异步重新加载，但继续执行删除（让后端验证）
+				loadUserModels(true);
+				// 不阻止删除，让后端验证模型是否属于当前用户
+			} else {
+				// 验证模型是否存在于用户模型列表中（确保ID类型匹配）
+				const modelExists = userModels.some(m => {
+					const modelId = typeof m.id === 'number' ? m.id : parseInt(m.id);
+					const currentId = typeof currentModelId === 'number' ? currentModelId : parseInt(currentModelId);
+					return modelId === currentId;
+				});
+				
+				if (!modelExists) {
+					console.warn('[模型管理] 模型不在用户模型列表中');
+					console.warn('[模型管理] currentModelId:', currentModelId, '类型:', typeof currentModelId);
+					console.warn('[模型管理] userModels:', userModels.map(m => ({ id: m.id, type: typeof m.id })));
+					// 不阻止删除，让后端验证（可能列表未及时更新）
+					console.warn('[模型管理] 继续执行删除，让后端验证模型所有权');
+				}
+			}
+			
+			if (!confirm('确定要删除当前模型吗？此操作不可恢复，将同时删除模型文件和数据库记录。')) {
+				return;
+			}
+			
+			const token = getToken();
+			if (!token) {
+				alert('请先登录');
+				return;
+			}
+			
+			// 保存要删除的模型ID，避免在删除过程中被修改（确保是整数）
+			const modelIdToDelete = typeof currentModelId === 'number' ? currentModelId : parseInt(currentModelId);
+			console.log('[模型管理] 开始删除模型，ID:', modelIdToDelete, '类型:', typeof modelIdToDelete);
+			console.log('[模型管理] userModels中的模型ID列表:', userModels.map(m => ({ id: m.id, type: typeof m.id })));
+			
+			// 先清空currentModelId，避免重复删除
+			currentModelId = null;
+			
+			// 禁用删除按钮，防止重复点击
+			const deleteBtn = document.getElementById('deleteBtn');
+			if (deleteBtn) {
+				deleteBtn.disabled = true;
+				deleteBtn.textContent = '删除中...';
+			}
+			
+			fetch(`/api/models/${modelIdToDelete}`, {
+				method: 'DELETE',
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				}
+			})
+				.then(async r => {
+					console.log('[模型管理] 删除请求响应:', r.status, r.statusText);
+					if (!r.ok) {
+						const errorText = await r.text();
+						let errorData;
+						try {
+							errorData = JSON.parse(errorText);
+						} catch {
+							errorData = { detail: errorText || `HTTP ${r.status}` };
+						}
+						return Promise.reject(errorData);
+					}
+					return r.json();
+				})
+				.then(data => {
+					console.log('[模型管理] 删除成功:', data);
+					
+					// 隐藏当前显示的模型（如果存在）
+					hideModel();
+					
+					// 清空当前模型ID和选择器
+					currentModelId = null;
+					const modelSelect = document.getElementById('modelSelect');
+					if (modelSelect) {
+						modelSelect.value = '';
+					}
+					
+					// 更新删除按钮状态
+					if (deleteBtn) {
+						deleteBtn.disabled = true;
+						deleteBtn.textContent = '删除当前模型';
+						console.log('[模型管理] 删除后，删除按钮已禁用');
+					}
+					
+					// 显示成功消息
+					alert('模型已成功删除（包括文件和数据库记录）');
+					
+					// 重新加载列表
+					loadUserModels(false); // 不跳过激活模型加载
+				})
+				.catch(error => {
+					console.error('[模型管理] 删除模型失败:', error);
+					console.error('[模型管理] 错误详情:', error);
+					
+					// 恢复删除按钮状态
+					if (deleteBtn) {
+						deleteBtn.disabled = false;
+						deleteBtn.textContent = '删除当前模型';
+					}
+					
+					// 显示错误消息
+					const errorMessage = error.detail || error.message || error.toString() || '未知错误';
+					alert('删除失败: ' + errorMessage);
+					
+					// 重新加载列表以同步状态
+					loadUserModels();
+				});
+		};
+		
+		// 上传模型相关函数 - 已在全局作用域定义，这里重新赋值以覆盖占位符
+		window.openUploadModal = function() {
+			console.log('[上传] ========== openUploadModal 被调用 ==========');
+			const modal = document.getElementById('uploadModal');
+			console.log('[上传] 找到模态框:', modal);
+			if (modal) {
+				modal.classList.add('active');
+				console.log('[上传] 模态框已添加active类，当前类:', modal.className);
+				console.log('[上传] 模态框display样式:', window.getComputedStyle(modal).display);
+				console.log('[上传] 模态框z-index:', window.getComputedStyle(modal).zIndex);
+				
+				// 确保模态框可见（双重保险）
+				modal.style.display = 'flex';
+			} else {
+				console.error('[上传] 未找到上传模态框元素');
+				alert('无法打开上传对话框，请刷新页面重试');
+			}
+		};
+		
+		// 确认上传函数 - 重新定义以覆盖占位符
+		window._confirmUpload = function() {
+			console.log('[上传] 确认保存模型');
+			
+			if (!tempUploadData || !tempUploadData.temp_file_id) {
+				alert('上传数据丢失，请重新上传');
+				closeUploadModal();
+				return;
+			}
+			
+			const modelNameInput = document.getElementById('modelNameInput');
+			const modelName = modelNameInput ? modelNameInput.value.trim() : '';
+			
+			if (!modelName) {
+				alert('请输入模型名称');
+				if (modelNameInput) modelNameInput.focus();
+				return;
+			}
+			
+			const token = getToken();
+			if (!token) {
+				alert('请先登录');
+				closeUploadModal();
+				return;
+			}
+			
+			// 禁用确认按钮
+			const confirmBtn = event.target;
+			if (confirmBtn) {
+				confirmBtn.disabled = true;
+				confirmBtn.textContent = '保存中...';
+			}
+			
+			// 发送确认请求
+			const formData = new FormData();
+			formData.append('temp_file_id', tempUploadData.temp_file_id);
+			formData.append('name', modelName);
+			
+			fetch('/api/confirm_model', {
+				method: 'POST',
+				headers: {
+					'Authorization': `Bearer ${token}`
+				},
+				body: formData
+			})
+				.then(async r => {
+					if (!r.ok) {
+						const errorText = await r.text();
+						let errorData;
+						try {
+							errorData = JSON.parse(errorText);
+						} catch {
+							errorData = { detail: errorText || `HTTP ${r.status}` };
+						}
+						throw errorData;
+					}
+					return r.json();
+				})
+				.then(data => {
+					console.log('[上传] 确认保存成功:', data);
+					
+					// 关闭上传对话框
+					closeUploadModal();
+					
+					// 更新模型列表
+					if (data.model && data.model.id) {
+						// 将新模型添加到userModels数组
+						if (!Array.isArray(userModels)) {
+							userModels = [];
+						}
+						const existingIndex = userModels.findIndex(m => m.id === data.model.id);
+						if (existingIndex >= 0) {
+							userModels[existingIndex] = data.model;
+						} else {
+							userModels.unshift(data.model);
+						}
+						
+						// 显示模型并设置为激活
+						displayModel(data.model);
+						setActiveModel(data.model.id, true);
+						
+						// 异步重新加载模型列表
+						setTimeout(() => {
+							loadUserModels(true);
+						}, 1000);
+					} else {
+						loadUserModels();
+					}
+				})
+				.catch(error => {
+					console.error('[上传] 确认保存失败:', error);
+					alert('保存失败: ' + (error.detail || error.message || '未知错误'));
+					if (confirmBtn) {
+						confirmBtn.disabled = false;
+						confirmBtn.textContent = '确认保存';
+					}
+				});
+		};
+		
+		// 重新定义closeUploadModal以覆盖全局函数
+		window.closeUploadModal = function() {
+			console.log('[上传] closeUploadModal 被调用');
+			const modal = document.getElementById('uploadModal');
+			if (modal) {
+				modal.classList.remove('active');
+				modal.style.display = 'none'; // 确保隐藏
+			}
+			// 重置上传状态
+			const fileInput = document.getElementById('fileInput');
+			const uploadArea = document.getElementById('uploadArea');
+			const uploadProgress = document.getElementById('uploadProgress');
+			const progressFill = document.getElementById('progressFill');
+			const progressText = document.getElementById('progressText');
+			const confirmSection = document.getElementById('confirmUploadSection');
+			const modelNameInput = document.getElementById('modelNameInput');
+			
+			if (fileInput) fileInput.value = '';
+			if (uploadArea) uploadArea.style.display = 'block';
+			if (uploadProgress) {
+				uploadProgress.classList.remove('active');
+				uploadProgress.style.display = 'none';
+			}
+			if (progressFill) {
+				progressFill.style.width = '0%';
+				progressFill.style.background = '';
+			}
+			if (progressText) {
+				progressText.textContent = '上传中...';
+				progressText.style.color = '';
+			}
+			if (confirmSection) confirmSection.style.display = 'none';
+			if (modelNameInput) modelNameInput.value = '';
+			
+			// 清除临时上传数据
+			tempUploadData = null;
+		};
+		
+		window.cancelUpload = function() {
+			console.log('[上传] 取消上传');
+			closeUploadModal();
+		};
+		
+		// 文件上传处理
+		const fileInput = document.getElementById('fileInput');
+		const uploadArea = document.getElementById('uploadArea');
+		
+		if (fileInput) {
+			fileInput.addEventListener('change', handleFileSelect);
+		}
+		
+		if (uploadArea) {
+			// 拖拽上传
+			uploadArea.addEventListener('dragover', (e) => {
+				e.preventDefault();
+				uploadArea.classList.add('dragover');
+			});
+			
+			uploadArea.addEventListener('dragleave', () => {
+				uploadArea.classList.remove('dragover');
+			});
+			
+			uploadArea.addEventListener('drop', (e) => {
+				e.preventDefault();
+				uploadArea.classList.remove('dragover');
+				console.log('拖拽文件事件触发');
+				const files = e.dataTransfer.files;
+				if (files.length > 0) {
+					console.log('拖拽的文件:', files[0].name, '类型:', files[0].type, '大小:', files[0].size);
+					uploadFile(files[0]);
+				} else {
+					console.warn('拖拽区域未检测到文件');
+				}
+			});
+		}
+		
+		function handleFileSelect(e) {
+			console.log('文件选择事件触发');
+			const file = e.target.files[0];
+			if (file) {
+				console.log('选择的文件:', file.name, '类型:', file.type, '大小:', file.size);
+				uploadFile(file);
+			} else {
+				console.warn('未选择文件');
+			}
+		}
+		
+		function uploadFile(file) {
+			console.log('开始上传文件:', file.name, '大小:', file.size);
+			
+			// 验证文件类型（支持所有允许的格式）
+			const ext = '.' + file.name.split('.').pop().toLowerCase();
+			const allowedExts = ['.glb', '.gltf', '.obj', '.fbx', '.stl', '.ply', '.dae', '.3ds'];
+			if (!allowedExts.includes(ext)) {
+				alert('不支持的文件格式。支持的格式: ' + allowedExts.join(', '));
+				return;
+			}
+			
+			// 验证文件大小
+			if (file.size > 100 * 1024 * 1024) {
+				alert('文件大小不能超过 100MB');
+				return;
+			}
+			
+			const token = getToken();
+			if (!token) {
+				alert('请先登录');
+				window.location.href = '/login';
+				return;
+			}
+			
+			console.log('Token存在，准备上传，Token长度:', token.length);
+			
+			const formData = new FormData();
+			formData.append('file', file);
+			
+			const uploadProgress = document.getElementById('uploadProgress');
+			const progressFill = document.getElementById('progressFill');
+			const progressText = document.getElementById('progressText');
+			
+			if (uploadProgress) {
+				uploadProgress.style.display = 'block';
+				uploadProgress.classList.add('active');
+			}
+			if (progressFill) progressFill.style.width = '0%';
+			if (progressText) progressText.textContent = '准备上传...';
+			
+			// 使用 XMLHttpRequest 来获取上传进度
+			const xhr = new XMLHttpRequest();
+			
+			// 上传进度事件
+			xhr.upload.addEventListener('progress', function(e) {
+				if (e.lengthComputable) {
+					const percentComplete = (e.loaded / e.total) * 100;
+					console.log('上传进度:', percentComplete.toFixed(1) + '%');
+					if (progressFill) {
+						progressFill.style.width = percentComplete + '%';
+					}
+					if (progressText) {
+						progressText.textContent = `上传中... ${percentComplete.toFixed(1)}%`;
+					}
+				}
+			});
+			
+			// 上传完成事件
+			xhr.addEventListener('load', function() {
+				console.log('上传完成，状态:', xhr.status);
+				if (xhr.status >= 200 && xhr.status < 300) {
+					try {
+						const data = JSON.parse(xhr.responseText);
+						console.log('上传成功:', data);
+						
+						// 保存临时上传数据
+						tempUploadData = data;
+						
+						if (progressFill) progressFill.style.width = '100%';
+						if (progressText) progressText.textContent = '上传成功！请确认保存';
+						
+						// 隐藏上传区域和进度条，显示确认对话框
+						const uploadArea = document.getElementById('uploadArea');
+						const uploadProgress = document.getElementById('uploadProgress');
+						const confirmSection = document.getElementById('confirmUploadSection');
+						const modelNameInput = document.getElementById('modelNameInput');
+						
+						if (uploadArea) uploadArea.style.display = 'none';
+						if (uploadProgress) uploadProgress.style.display = 'none';
+						if (confirmSection) confirmSection.style.display = 'block';
+						if (modelNameInput) {
+							// 使用原始文件名（去掉扩展名）作为默认名称
+							const originalName = data.original_filename || '';
+							const nameWithoutExt = originalName.replace(/\.[^/.]+$/, '');
+							modelNameInput.value = nameWithoutExt || '';
+							modelNameInput.focus();
+						}
+					} catch (e) {
+						console.error('解析响应失败:', e);
+						handleUploadError({ detail: '服务器响应格式错误' });
+					}
+				} else {
+					// 处理错误响应
+					let errorData;
+					try {
+						errorData = JSON.parse(xhr.responseText);
+					} catch (e) {
+						errorData = { detail: `HTTP ${xhr.status}: ${xhr.statusText}` };
+					}
+					console.error('上传失败响应:', errorData);
+					handleUploadError(errorData);
+				}
+			});
+			
+			// 上传错误事件
+			xhr.addEventListener('error', function() {
+				console.error('上传网络错误');
+				handleUploadError({ detail: '网络错误，请检查网络连接' });
+			});
+			
+			// 上传中止事件
+			xhr.addEventListener('abort', function() {
+				console.log('上传已中止');
+				if (progressText) progressText.textContent = '上传已取消';
+			});
+			
+			// 开始上传
+			xhr.open('POST', '/api/upload_model');
+			xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+			xhr.send(formData);
+		}
+		
+		function handleUploadError(error) {
+					console.error('上传失败:', error);
+			const errorMsg = error.detail || error.message || '未知错误';
+			console.error('错误详情:', errorMsg);
+			
+			const progressText = document.getElementById('progressText');
+			const progressFill = document.getElementById('progressFill');
+			
+			if (progressText) {
+				progressText.textContent = '上传失败: ' + errorMsg;
+				progressText.style.color = '#ef4444';
+			}
+			if (progressFill) {
+				progressFill.style.width = '0%';
+				progressFill.style.background = '#ef4444';
+			}
+			
+			// 3秒后恢复样式
+					setTimeout(() => {
+				if (progressText) progressText.style.color = '';
+				if (progressFill) progressFill.style.background = '';
+					}, 3000);
+		}
+		
+		// 点击模态框外部关闭
+		const uploadModal = document.getElementById('uploadModal');
+		if (uploadModal) {
+			uploadModal.addEventListener('click', (e) => {
+				if (e.target === uploadModal) {
+					closeUploadModal();
+				}
+			});
+		}
+		
+		// 初始化：设置模型展示区域的滚动控制（即使Three.js未初始化也要设置）
+		setupModelViewerScrollControl();
+		
+		// 初始化：加载模型列表
+		if (getToken()) {
+			loadUserModels();
+		}
+		
+		// 在立即执行函数执行完成后，将内部函数赋值给全局函数
+		setTimeout(function() {
+			if (window._deleteCurrentModel) {
+				window.deleteCurrentModel = window._deleteCurrentModel;
+			}
+			if (window._toggleFullscreen) {
+				window.toggleFullscreen = window._toggleFullscreen;
+			}
+			if (window._toggleSettingsPanel) {
+				window.toggleSettingsPanel = window._toggleSettingsPanel;
+			}
+			if (window._updateBackgroundColor) {
+				window.updateBackgroundColor = window._updateBackgroundColor;
+			}
+			if (window._updateAmbientColor) {
+				window.updateAmbientColor = window._updateAmbientColor;
+			}
+			if (window._updateAmbientBrightness) {
+				window.updateAmbientBrightness = window._updateAmbientBrightness;
+			}
+			if (window._confirmUpload) {
+				window.confirmUpload = window._confirmUpload;
+			}
+		}, 100);
+	})();
+    </script>
+</body>
+</html>

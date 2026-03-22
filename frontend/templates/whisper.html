@@ -1,0 +1,1565 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>语音工作室 - YuNi</title>
+	<script src="https://cdn.tailwindcss.com"></script>
+	<script>
+		tailwind.config = {
+			theme: {
+				extend: {
+					fontFamily: {
+						sans: ['-apple-system', 'BlinkMacSystemFont', 'SF Pro Display', 'Inter', 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
+					},
+					colors: {
+						gray: {
+							50: '#fafafa', 100: '#f4f4f5', 200: '#e4e4e7', 300: '#d4d4d8',
+							400: '#a1a1aa', 500: '#71717a', 600: '#52525b', 700: '#3f3f46',
+							800: '#27272a', 900: '#18181b',
+						}
+					}
+				}
+			}
+		}
+	</script>
+	<style>
+		.wave-bar { animation: wave 1s ease-in-out infinite; }
+		.wave-bar:nth-child(1) { animation-delay: 0s; }
+		.wave-bar:nth-child(2) { animation-delay: 0.1s; }
+		.wave-bar:nth-child(3) { animation-delay: 0.2s; }
+		.wave-bar:nth-child(4) { animation-delay: 0.3s; }
+		.wave-bar:nth-child(5) { animation-delay: 0.4s; }
+		.wave-bar:nth-child(6) { animation-delay: 0.5s; }
+		.wave-bar:nth-child(7) { animation-delay: 0.6s; }
+		.wave-bar:nth-child(8) { animation-delay: 0.7s; }
+		.wave-bar:nth-child(9) { animation-delay: 0.8s; }
+		.wave-bar:nth-child(10) { animation-delay: 0.9s; }
+		@keyframes wave { 0%, 100% { transform: scaleY(0.3); } 50% { transform: scaleY(1); } }
+		.mesh-gradient { background: linear-gradient(135deg, #fafafa 0%, #f4f4f5 50%, #e4e4e7 100%); }
+		.btn-primary { background: #18181b; color: white; }
+		.btn-primary:hover { background: #27272a; }
+		.btn-primary:disabled { background: #a1a1aa; cursor: not-allowed; }
+		.btn-secondary { background: white; color: #18181b; border: 1px solid #e4e4e7; }
+		.btn-secondary:hover { background: #f4f4f5; }
+		.toast { position: fixed; top: 80px; left: 50%; transform: translateX(-50%) translateY(-20px); opacity: 0; transition: all 0.3s ease; z-index: 1000; }
+		.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+		.sidebar-section { display: flex; flex-direction: column; min-height: 0; }
+		.history-panel { position: fixed; top: 0; left: 0; bottom: 0; width: 320px; background: white; border-right: 1px solid #e4e4e7; transform: translateX(-100%); transition: transform 0.3s ease; z-index: 1000; display: flex; flex-direction: column; box-shadow: 4px 0 12px rgba(0,0,0,0.1); }
+		.history-panel.open { transform: translateX(0); }
+		.history-panel-header { padding: 16px; border-bottom: 1px solid #e4e4e7; display: flex; align-items: center; justify-content: space-between; background: white; }
+		.history-panel-content { flex: 1; overflow-y: auto; padding: 12px; }
+		.history-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.3); backdrop-filter: blur(4px); z-index: 999; opacity: 0; visibility: hidden; transition: all 0.3s; }
+		.history-overlay.show { opacity: 1; visibility: visible; }
+		.collapsible-header .chevron { transition: transform 0.2s ease; }
+		.collapsible-header .chevron.collapsed { transform: rotate(-90deg); }
+		.collapsible-content { flex: 1; overflow-y: auto; display: block; }
+		.collapsible-content.collapsed { display: none; }
+		.sidebar-header { flex-shrink: 0; }
+		.resize-handle { height: 8px; background: transparent; cursor: ns-resize; display: flex; align-items: center; justify-content: center; transition: background 0.2s; flex-shrink: 0; }
+		.resize-handle:hover { background: #e4e4e7; }
+		.resize-handle::after { content: ''; width: 40px; height: 3px; background: #d4d4d8; border-radius: 2px; }
+		.resize-handle.active::after { background: #18181b; }
+		.resizing { user-select: none; }
+	</style>
+</head>
+<body class="h-screen w-screen overflow-hidden mesh-gradient font-sans text-gray-900">
+	{% include 'shared/header.html' %}
+	
+	<div class="flex h-[calc(100vh-64px)]">
+		<!-- Left Panel: Recording -->
+		<div class="w-72 bg-white border-r border-gray-200 flex flex-col" style="height: 100%;">
+			<!-- Recording Section -->
+			<div id="recordSection" class="sidebar-section">
+				<div class="sidebar-header p-4 border-b border-gray-200">
+					<h2 class="font-medium text-gray-900">录音</h2>
+				</div>
+				<div class="flex-1 flex flex-col items-center justify-center p-4">
+					<button id="recordBtn" class="w-20 h-20 rounded-full btn-primary flex items-center justify-center mb-4 cursor-pointer">
+						<svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+							<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+							<path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+						</svg>
+					</button>
+					<div id="timer" class="text-2xl font-mono text-gray-600 mb-4">00:00</div>
+					<div class="flex items-end justify-center gap-1 h-12 mb-4 w-full">
+						<div class="w-1 bg-gray-300 rounded wave-bar" style="height: 8px;"></div>
+						<div class="w-1 bg-gray-300 rounded wave-bar" style="height: 12px;"></div>
+						<div class="w-1 bg-gray-300 rounded wave-bar" style="height: 8px;"></div>
+						<div class="w-1 bg-gray-300 rounded wave-bar" style="height: 16px;"></div>
+						<div class="w-1 bg-gray-300 rounded wave-bar" style="height: 10px;"></div>
+						<div class="w-1 bg-gray-300 rounded wave-bar" style="height: 14px;"></div>
+						<div class="w-1 bg-gray-300 rounded wave-bar" style="height: 8px;"></div>
+						<div class="w-1 bg-gray-300 rounded wave-bar" style="height: 12px;"></div>
+						<div class="w-1 bg-gray-300 rounded wave-bar" style="height: 10px;"></div>
+						<div class="w-1 bg-gray-300 rounded wave-bar" style="height: 16px;"></div>
+					</div>
+					<button id="stopBtn" class="w-12 h-12 rounded-full bg-red-500 flex items-center justify-center mb-4 cursor-pointer" style="display: none;">
+						<div class="w-4 h-4 bg-white rounded-sm"></div>
+					</button>
+					
+					<button id="playRecordBtn" class="btn-secondary px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 mb-3 cursor-pointer" style="display: none;">
+						<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg>
+						试听录音
+					</button>
+					
+					<button id="convertBtn" class="btn-primary px-6 py-2 rounded-lg text-sm font-medium mb-3 cursor-pointer" style="display: none;">
+						开始识别
+					</button>
+					
+					<label class="btn-secondary px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 cursor-pointer">
+						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+						</svg>
+						上传音频
+						<input type="file" id="uploadInput" accept="audio/*" class="hidden">
+					</label>
+				</div>
+			</div>
+			
+			<!-- Download Section -->
+			<div class="sidebar-section flex-shrink-0" style="border-top: 1px solid #e4e4e7;">
+				<div class="sidebar-header p-3 border-b border-gray-200 flex items-center justify-between">
+					<h2 class="font-medium text-gray-900 text-sm">下载录音 (WAV)</h2>
+				</div>
+				<div class="p-3 flex items-center gap-2">
+					<button id="downloadAudioBtn" class="btn-secondary w-full px-3 py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2 cursor-pointer" disabled>
+						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+						</svg>
+						下载 WAV
+					</button>
+				</div>
+			</div>
+		</div>
+		
+		<!-- Center Panel: Text Result -->
+		<div class="flex-1 flex flex-col border-r border-gray-200 bg-white min-w-0">
+			<!-- Header -->
+			<div class="p-3 border-b border-gray-200 flex items-center justify-between gap-2">
+				<div class="flex items-center gap-2">
+					<button id="historyToggleBtn" class="btn-secondary px-3 py-1.5 rounded-lg text-xs flex items-center gap-1 cursor-pointer">
+						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+						</svg>
+						历史记录
+					</button>
+					<h2 class="font-medium text-gray-900 text-sm">识别结果</h2>
+				</div>
+				<div class="flex items-center gap-2">
+					<select id="langSelect" class="btn-secondary px-2 py-1 rounded-lg text-xs outline-none cursor-pointer">
+						<option value="auto">自动识别</option>
+						<option value="zh">简体中文</option>
+						<option value="zh-Hant">繁体中文</option>
+						<option value="en">英语</option>
+						<option value="ja">日语</option>
+						<option value="ko">韩语</option>
+					</select>
+					<select id="modelSelect" class="btn-secondary px-2 py-1 rounded-lg text-xs outline-none cursor-pointer">
+						<option value="tiny">Whisper Tiny</option>
+						<option value="base">Whisper Base</option>
+						<option value="medium">Whisper Medium</option>
+						<option value="large" selected>Whisper Large</option>
+					</select>
+				</div>
+			</div>
+			
+			<!-- 批量 ASR：递归扫描；可将 faster-whisper 模型放到 tools/asr/models；.list -> data/asr_opt/ -->
+			<div class="px-3 py-2 border-b border-gray-200 flex flex-col gap-1">
+				<div class="flex items-center gap-2 flex-wrap">
+					<span class="text-xs text-gray-500 whitespace-nowrap">输入音频目录</span>
+					<input type="text" id="batchFolderPath" class="flex-1 min-w-[200px] px-2 py-1 text-xs border border-gray-200 rounded-lg outline-none focus:border-gray-400" placeholder="例如 data/你的数据集/wavs（项目或 data 下，递归子目录）" autocomplete="off" />
+				</div>
+				<div class="flex items-center gap-2 flex-wrap">
+					<span class="text-xs text-gray-500 whitespace-nowrap">角色名</span>
+					<input type="text" id="batchCharacterName" class="flex-1 min-w-[140px] px-2 py-1 text-xs border border-gray-200 rounded-lg outline-none focus:border-gray-400" placeholder="写入 .list 第 2 列，默认同文件夹名" autocomplete="off" />
+				</div>
+				<progress id="batchAsrProgress" max="100" value="0" class="w-full h-1.5 rounded overflow-hidden hidden"></progress>
+				<span id="batchAsrHint" class="text-xs text-gray-400 hidden"></span>
+				<label class="text-xs text-gray-500" for="asrBatchLog">识别日志</label>
+				<textarea id="asrBatchLog" readonly rows="4" class="w-full resize-y min-h-[4.5rem] max-h-40 px-2 py-1 text-xs font-mono border border-gray-200 rounded-lg bg-gray-50 text-gray-700 outline-none focus:border-gray-400" placeholder="批量识别进度与提示将实时显示在此..."></textarea>
+			</div>
+			
+			<!-- Text Area -->
+			<div id="singleResult" class="flex-1 flex flex-col">
+				<div class="flex-1 p-4">
+					<textarea id="resultText" class="w-full h-full resize-none border border-gray-200 rounded-lg p-4 text-gray-800 text-lg leading-relaxed focus:border-gray-400 focus:outline-none placeholder:text-gray-400" placeholder="点击录音或上传音频开始..."></textarea>
+				</div>
+				<div class="p-3 border-t border-gray-200 flex items-center gap-2">
+					<button id="copyTextBtn" class="btn-secondary px-3 py-1.5 rounded-lg text-xs flex items-center gap-1 cursor-pointer">
+						<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+						复制
+					</button>
+					<button id="translateBtn" class="btn-secondary px-3 py-1.5 rounded-lg text-xs flex items-center gap-1 cursor-pointer">
+						<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path>
+						</svg>
+						翻译
+					</button>
+					<button id="clearTextBtn" class="btn-secondary px-3 py-1.5 rounded-lg text-xs flex items-center gap-1 cursor-pointer">
+						<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+						清空
+					</button>
+					<span id="detectedLang" class="ml-auto text-xs text-gray-400 hidden"></span>
+				</div>
+				
+				<!-- Translation Split View -->
+				<div id="splitResult" class="flex-1 flex flex-col hidden" style="height: 50%;">
+					<div class="flex-1 flex flex-col border-t border-gray-200">
+						<div class="px-3 py-1.5 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+							<span class="text-xs text-gray-500">原文</span>
+							<button id="copyOriginalBtn" class="btn-secondary px-2 py-0.5 rounded text-xs cursor-pointer">复制原文</button>
+						</div>
+						<div class="flex-1 p-3 overflow-y-auto">
+							<div id="originalText" class="text-gray-800 text-base leading-relaxed whitespace-pre-wrap"></div>
+						</div>
+					</div>
+					<div class="flex-1 flex flex-col">
+						<div class="px-3 py-1.5 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+							<div class="flex items-center gap-2">
+								<span class="text-xs text-gray-500">翻译</span>
+								<select id="targetLangSelect" class="btn-secondary px-2 py-0.5 rounded text-xs outline-none cursor-pointer">
+									<option value="zh">简体中文</option>
+									<option value="zh-Hant">繁体中文</option>
+									<option value="en">英语</option>
+									<option value="ja">日语</option>
+									<option value="ko">韩语</option>
+								</select>
+							</div>
+							<button id="copyTranslatedBtn" class="btn-secondary px-2 py-0.5 rounded text-xs cursor-pointer">复制翻译</button>
+						</div>
+						<div class="flex-1 p-3 overflow-y-auto">
+							<div id="translatedText" class="text-gray-800 text-base leading-relaxed whitespace-pre-wrap">点击翻译按钮显示翻译结果</div>
+						</div>
+					</div>
+				</div>
+				
+				<!-- API Key Config -->
+				<div id="apiKeyConfig" class="p-3 border-t border-gray-200 bg-gray-50 hidden">
+					<div class="flex items-center gap-2 mb-2">
+						<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
+						<span class="text-xs text-gray-600">DeepL API Key</span>
+						<button id="saveApiKeyBtn" class="ml-auto btn-primary px-3 py-0.5 rounded text-xs cursor-pointer">保存</button>
+					</div>
+					<input id="deeplApiKey" type="password" class="w-full px-2 py-1 text-xs border border-gray-200 rounded outline-none" placeholder="输入 DeepL API Key">
+					<div class="mt-1 text-xs text-gray-400">API Key 保存在本地，用于翻译功能</div>
+				</div>
+			</div>
+		</div>
+		
+		<!-- Right Panel: TTS -->
+		<div class="w-80 bg-white border-r border-gray-200 flex flex-col" style="height: 100%;">
+			<!-- TTS Section -->
+			<div id="ttsSection" class="sidebar-section">
+				<div class="sidebar-header p-3 border-b border-gray-200 flex items-center justify-between collapsible-header cursor-pointer">
+					<h2 class="font-medium text-gray-900 text-sm">文字转语音</h2>
+					<svg class="w-4 h-4 chevron text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 9l-7 7-7-7"></path></svg>
+				</div>
+				<div class="collapsible-content flex flex-col">
+					<div class="p-3 border-b border-gray-100">
+						<textarea id="ttsInput" class="w-full h-24 resize-none border border-gray-200 rounded-lg p-2 text-sm focus:border-gray-400 focus:outline-none placeholder:text-gray-400" placeholder="输入要转换的文字..."></textarea>
+					</div>
+					<div class="p-3 border-b border-gray-100 space-y-2">
+						<div class="flex items-center gap-2">
+							<label class="text-xs text-gray-600 w-12">音色</label>
+							<select id="voiceSelect" class="btn-secondary px-2 py-1 rounded text-xs outline-none flex-1 cursor-pointer">
+								<option value="default">默认音色</option>
+							</select>
+						</div>
+						<div class="flex items-center gap-2">
+							<label class="text-xs text-gray-600 w-12">语速</label>
+							<input type="range" id="speedInput" min="0.5" max="2" step="0.1" value="1" class="flex-1 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+							<span id="speedValue" class="text-xs text-gray-500 w-12 text-right">1.0x</span>
+						</div>
+						<div class="flex items-center gap-2">
+							<label class="text-xs text-gray-600 w-12">音量</label>
+							<input type="range" id="volumeInput" min="0" max="1" step="0.1" value="1" class="flex-1 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+							<span id="volumeValue" class="text-xs text-gray-500 w-12 text-right">100%</span>
+						</div>
+					</div>
+					<!-- Emotion Control -->
+					<div class="p-3 border-b border-gray-100">
+						<div class="flex items-center gap-2 mb-2">
+							<label class="text-xs text-gray-600 font-medium">情感控制</label>
+						</div>
+						<select id="emotionModeSelect" class="w-full btn-secondary px-2 py-1 rounded text-xs outline-none cursor-pointer mb-2">
+							<option value="same">与音色音频相同</option>
+							<option value="reference">使用情感参考音频</option>
+							<option value="vector">情感向量控制</option>
+						</select>
+						<!-- Emotion Reference Audio -->
+						<div id="emotionRefSection" class="hidden">
+							<input type="file" id="emotionRefInput" accept="audio/*" class="hidden">
+							<button id="emotionRefBtn" class="btn-secondary w-full px-2 py-1 rounded text-xs cursor-pointer">
+								选择情感参考音频
+							</button>
+							<span id="emotionRefName" class="text-xs text-gray-400 mt-1 block truncate">未选择</span>
+						</div>
+						<!-- Emotion Vector Sliders -->
+						<div id="emotionVectorSection" class="hidden space-y-1 mt-2">
+							<div class="flex items-center gap-1">
+								<span class="text-xs text-gray-500 w-10">喜悦</span>
+								<input type="range" id="emotionJoy" min="0" max="1" step="0.1" value="0" class="flex-1 h-1 bg-gray-200 rounded appearance-none cursor-pointer">
+								<span id="emotionJoyVal" class="text-xs text-gray-400 w-8 text-right">0</span>
+							</div>
+							<div class="flex items-center gap-1">
+								<span class="text-xs text-gray-500 w-10">愤怒</span>
+								<input type="range" id="emotionAnger" min="0" max="1" step="0.1" value="0" class="flex-1 h-1 bg-gray-200 rounded appearance-none cursor-pointer">
+								<span id="emotionAngerVal" class="text-xs text-gray-400 w-8 text-right">0</span>
+							</div>
+							<div class="flex items-center gap-1">
+								<span class="text-xs text-gray-500 w-10">悲伤</span>
+								<input type="range" id="emotionSadness" min="0" max="1" step="0.1" value="0" class="flex-1 h-1 bg-gray-200 rounded appearance-none cursor-pointer">
+								<span id="emotionSadnessVal" class="text-xs text-gray-400 w-8 text-right">0</span>
+							</div>
+							<div class="flex items-center gap-1">
+								<span class="text-xs text-gray-500 w-10">恐惧</span>
+								<input type="range" id="emotionFear" min="0" max="1" step="0.1" value="0" class="flex-1 h-1 bg-gray-200 rounded appearance-none cursor-pointer">
+								<span id="emotionFearVal" class="text-xs text-gray-400 w-8 text-right">0</span>
+							</div>
+							<div class="flex items-center gap-1">
+								<span class="text-xs text-gray-500 w-10">厌恶</span>
+								<input type="range" id="emotionDisgust" min="0" max="1" step="0.1" value="0" class="flex-1 h-1 bg-gray-200 rounded appearance-none cursor-pointer">
+								<span id="emotionDisgustVal" class="text-xs text-gray-400 w-8 text-right">0</span>
+							</div>
+							<div class="flex items-center gap-1">
+								<span class="text-xs text-gray-500 w-10">低落</span>
+								<input type="range" id="emotionDepression" min="0" max="1" step="0.1" value="0" class="flex-1 h-1 bg-gray-200 rounded appearance-none cursor-pointer">
+								<span id="emotionDepressionVal" class="text-xs text-gray-400 w-8 text-right">0</span>
+							</div>
+							<div class="flex items-center gap-1">
+								<span class="text-xs text-gray-500 w-10">惊喜</span>
+								<input type="range" id="emotionSurprise" min="0" max="1" step="0.1" value="0" class="flex-1 h-1 bg-gray-200 rounded appearance-none cursor-pointer">
+								<span id="emotionSurpriseVal" class="text-xs text-gray-400 w-8 text-right">0</span>
+							</div>
+							<div class="flex items-center gap-1">
+								<span class="text-xs text-gray-500 w-10">平静</span>
+								<input type="range" id="emotionCalm" min="0" max="1" step="0.1" value="0" class="flex-1 h-1 bg-gray-200 rounded appearance-none cursor-pointer">
+								<span id="emotionCalmVal" class="text-xs text-gray-400 w-8 text-right">0</span>
+							</div>
+						</div>
+					</div>
+					<div class="p-3 border-b border-gray-100 flex items-center gap-2">
+						<button id="synthesizeBtn" class="btn-primary flex-1 px-3 py-2 rounded-lg text-sm font-medium cursor-pointer">
+							生成语音
+						</button>
+						<button id="playTtsBtn" class="btn-secondary px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-1 cursor-pointer" disabled>
+							<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg>
+							播放
+						</button>
+						<button id="downloadTtsBtn" class="btn-secondary px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-1 cursor-pointer" disabled>
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+							</svg>
+						</button>
+					</div>
+					<div id="ttsResult" class="p-3 hidden">
+						<div class="text-xs text-gray-500 mb-1">生成结果</div>
+						<div class="flex items-center gap-2 text-xs text-gray-400">
+							<span>时长: <span id="ttsDuration">0:00</span></span>
+						</div>
+					</div>
+				</div>
+			</div>
+			
+			<!-- Resize Handle -->
+			<div id="resizeHandleTts" class="resize-handle"></div>
+			
+			<!-- Voice Library Section -->
+			<div id="voiceSection" class="sidebar-section flex-1">
+				<div class="sidebar-header p-3 border-b border-gray-200 flex items-center justify-between collapsible-header cursor-pointer" style="margin-top: -1px;">
+					<h2 class="font-medium text-gray-900 text-sm">音色库</h2>
+					<svg class="w-4 h-4 chevron text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 9l-7 7-7-7"></path></svg>
+				</div>
+				<div class="collapsible-content flex flex-col">
+					<div class="p-2 border-b border-gray-100">
+						<button id="addVoiceBtn" class="btn-secondary w-full px-3 py-2 rounded-lg text-xs font-medium flex items-center justify-center gap-1 cursor-pointer">
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v16m8-8H4"></path></svg>
+							添加音色
+						</button>
+					</div>
+					<div id="voiceList" class="flex-1 overflow-y-auto p-2 space-y-1">
+						<div class="text-center py-6 text-gray-400 text-xs">暂无音色</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<!-- History Panel -->
+	<div id="historyOverlay" class="history-overlay"></div>
+	<div id="historyPanel" class="history-panel">
+		<div class="history-panel-header">
+			<h3 class="text-sm font-medium text-gray-900">历史记录</h3>
+			<div class="flex items-center gap-2">
+				<button id="clearHistoryBtn" class="text-xs text-red-600 hover:text-red-700 px-2 py-1 rounded hover:bg-red-50 cursor-pointer" title="清空所有历史">
+					清空
+				</button>
+				<button id="closeHistoryPanel" class="w-6 h-6 rounded hover:bg-gray-100 flex items-center justify-center cursor-pointer">
+					<svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"></path>
+					</svg>
+				</button>
+			</div>
+		</div>
+		<div id="historyList" class="history-panel-content">
+			<div class="text-center py-8 text-gray-400 text-xs">暂无历史</div>
+		</div>
+	</div>
+	
+	<!-- Toast -->
+	<div class="toast" id="toast">
+		<div class="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm">
+			<span id="toastMessage">操作成功</span>
+		</div>
+	</div>
+	
+	<!-- Add Voice Modal -->
+	<div id="voiceModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center">
+		<div class="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
+			<div class="flex items-center justify-between mb-4">
+				<h3 class="text-lg font-medium text-gray-900">添加音色</h3>
+				<button id="closeVoiceModal" class="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center cursor-pointer">
+					<svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+				</button>
+			</div>
+			<div class="mb-4">
+				<label class="text-sm text-gray-600 mb-2 block">音色名称</label>
+				<input type="text" id="voiceName" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-gray-400" placeholder="给音色起个名字">
+			</div>
+			<div class="mb-4">
+				<label class="text-sm text-gray-600 mb-2 block">上传参考音频 (10-30秒)</label>
+				<label class="border border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50">
+					<svg class="w-8 h-8 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+					<span class="text-sm text-gray-500">点击上传音频文件</span>
+					<input type="file" id="voiceAudioInput" accept="audio/*" class="hidden">
+				</label>
+				<p id="voiceAudioName" class="text-xs text-gray-400 mt-2"></p>
+			</div>
+			<button id="saveVoiceBtn" class="btn-primary w-full px-4 py-2.5 rounded-lg text-sm font-medium" disabled>
+				保存音色
+			</button>
+		</div>
+	</div>
+	
+	<!-- Loading -->
+	<div id="loadingOverlay" class="fixed inset-0 bg-white/80 backdrop-blur-sm z-50 hidden items-center justify-center">
+		<div class="text-center">
+			<div class="w-12 h-12 border-2 border-gray-200 border-t-gray-900 rounded-full animate-spin mx-auto mb-4"></div>
+			<p id="loadingText" class="text-gray-600">处理中...</p>
+		</div>
+	</div>
+	
+	<script>
+		document.addEventListener('DOMContentLoaded', () => {
+			let mediaRecorder = null;
+			let audioChunks = [];
+			let recordedBlob = null;
+			let recordedUrl = null;
+			let recordedAudio = null;
+			let ttsAudioBlob = null;
+			let ttsAudio = null;
+			let isRecording = false;
+			let timerInterval = null;
+			let timerSeconds = 0;
+			let isTTSPlaying = false;
+			let isRecordPlaying = false;
+			let userVoices = [];
+			
+			const recordBtn = document.getElementById('recordBtn');
+			const stopBtn = document.getElementById('stopBtn');
+			const timerEl = document.getElementById('timer');
+			const uploadInput = document.getElementById('uploadInput');
+			const resultText = document.getElementById('resultText');
+			const ttsInput = document.getElementById('ttsInput');
+			const downloadAudioBtn = document.getElementById('downloadAudioBtn');
+			const playRecordBtn = document.getElementById('playRecordBtn');
+			const convertBtn = document.getElementById('convertBtn');
+			const synthesizeBtn = document.getElementById('synthesizeBtn');
+			const playTtsBtn = document.getElementById('playTtsBtn');
+			const downloadTtsBtn = document.getElementById('downloadTtsBtn');
+			const voiceModal = document.getElementById('voiceModal');
+			const addVoiceBtn = document.getElementById('addVoiceBtn');
+			const closeVoiceModal = document.getElementById('closeVoiceModal');
+			const voiceName = document.getElementById('voiceName');
+			const voiceAudioInput = document.getElementById('voiceAudioInput');
+			const voiceAudioName = document.getElementById('voiceAudioName');
+			const saveVoiceBtn = document.getElementById('saveVoiceBtn');
+			const voiceList = document.getElementById('voiceList');
+			const voiceSelect = document.getElementById('voiceSelect');
+			const historyList = document.getElementById('historyList');
+			const speedInput = document.getElementById('speedInput');
+			const speedValue = document.getElementById('speedValue');
+			const volumeInput = document.getElementById('volumeInput');
+			const volumeValue = document.getElementById('volumeValue');
+			const loadingOverlay = document.getElementById('loadingOverlay');
+			const loadingText = document.getElementById('loadingText');
+			const toast = document.getElementById('toast');
+			const toastMessage = document.getElementById('toastMessage');
+			
+			console.log('DOM loaded, elements initialized');
+			
+			function showToast(msg) {
+				if (!toastMessage || !toast) return;
+				toastMessage.textContent = msg;
+				toast.classList.add('show');
+				setTimeout(() => toast.classList.remove('show'), 2000);
+			}
+			
+			function showLoading(text) {
+				if (!loadingText || !loadingOverlay) return;
+				loadingText.textContent = text;
+				loadingOverlay.classList.remove('hidden');
+				loadingOverlay.classList.add('flex');
+			}
+			
+			function hideLoading() {
+				if (!loadingOverlay) return;
+				loadingOverlay.classList.add('hidden');
+				loadingOverlay.classList.remove('flex');
+			}
+			
+			function startTimer() {
+				timerSeconds = 0;
+				if (timerEl) timerEl.textContent = '00:00';
+				timerInterval = setInterval(() => {
+					timerSeconds++;
+					const m = Math.floor(timerSeconds / 60);
+					const s = timerSeconds % 60;
+					if (timerEl) timerEl.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+				}, 1000);
+			}
+			
+			function stopTimer() {
+				clearInterval(timerInterval);
+			}
+			
+			// Recording
+			if (recordBtn) {
+				recordBtn.addEventListener('click', async () => {
+					try {
+						const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+						
+						let mimeType = 'audio/webm;codecs=opus';
+						if (!MediaRecorder.isTypeSupported(mimeType)) {
+							mimeType = 'audio/webm';
+						}
+						if (!MediaRecorder.isTypeSupported(mimeType)) {
+							mimeType = 'audio/mp4';
+						}
+						if (!MediaRecorder.isTypeSupported(mimeType)) {
+							mimeType = '';
+						}
+						
+						mediaRecorder = new MediaRecorder(stream, { mimeType: mimeType });
+						audioChunks = [];
+						
+						mediaRecorder.ondataavailable = (e) => { 
+							if (e.data && e.data.size > 0) audioChunks.push(e.data); 
+						};
+						
+						mediaRecorder.onstop = async () => {
+							stream.getTracks().forEach(t => t.stop());
+							
+							const webmBlob = new Blob(audioChunks, { type: mimeType || 'audio/webm' });
+							showLoading('转换音频格式...');
+							
+							try {
+								// Use backend API to convert to WAV
+								const formData = new FormData();
+								formData.append('audio', webmBlob, 'recording.webm');
+								
+								const response = await fetch('/api/convert-to-wav', {
+									method: 'POST',
+									body: formData
+								});
+								
+								if (response.ok) {
+									const data = await response.json();
+									// Convert base64 back to blob
+									const binary = atob(data.audio);
+									const len = binary.length;
+									const bytes = new Uint8Array(len);
+									for (let i = 0; i < len; i++) bytes[i] = binary.charCodeAt(i);
+									recordedBlob = new Blob([bytes.buffer], { type: 'audio/wav' });
+								} else {
+									throw new Error('转换失败');
+								}
+							} catch (err) {
+								console.error('音频转换失败，使用原始格式:', err);
+								recordedBlob = webmBlob;
+							}
+							
+							recordedUrl = URL.createObjectURL(recordedBlob);
+							recordedAudio = new Audio(recordedUrl);
+							
+							if (downloadAudioBtn) downloadAudioBtn.disabled = false;
+							if (playRecordBtn) playRecordBtn.style.display = 'inline-flex';
+							if (convertBtn) convertBtn.style.display = 'inline-flex';
+							hideLoading();
+							showToast('录音完成，点击试听或开始识别');
+						};
+						
+						mediaRecorder.start(1000);
+						isRecording = true;
+						if (recordBtn) recordBtn.style.display = 'none';
+						if (stopBtn) stopBtn.style.display = 'flex';
+						startTimer();
+					} catch (e) {
+						console.error('录音失败:', e);
+						showToast('无法访问麦克风: ' + e.message);
+					}
+				});
+			}
+			
+			if (stopBtn) {
+				stopBtn.addEventListener('click', () => {
+					if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+						mediaRecorder.stop();
+						isRecording = false;
+						stopTimer();
+						if (recordBtn) recordBtn.style.display = 'flex';
+						if (stopBtn) stopBtn.style.display = 'none';
+					}
+				});
+			}
+			
+			// Play recorded audio
+			if (playRecordBtn) {
+				playRecordBtn.addEventListener('click', () => {
+					if (!recordedAudio) return;
+					
+					if (isRecordPlaying) {
+						recordedAudio.pause();
+						isRecordPlaying = false;
+						playRecordBtn.innerHTML = '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg> 试听';
+					} else {
+						recordedAudio.play();
+						isRecordPlaying = true;
+						playRecordBtn.innerHTML = '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg> 暂停';
+						recordedAudio.addEventListener('ended', () => {
+							isRecordPlaying = false;
+							playRecordBtn.innerHTML = '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg> 试听';
+						});
+					}
+				});
+			}
+			
+			const batchFolderPath = document.getElementById('batchFolderPath');
+			const batchCharacterName = document.getElementById('batchCharacterName');
+			const batchAsrProgress = document.getElementById('batchAsrProgress');
+			const batchAsrHint = document.getElementById('batchAsrHint');
+			const asrBatchLog = document.getElementById('asrBatchLog');
+			
+			function appendAsrLog(line) {
+				if (!asrBatchLog) return;
+				const t = (asrBatchLog.value + line + '\n');
+				asrBatchLog.value = t.length > 12000 ? t.slice(-12000) : t;
+				asrBatchLog.scrollTop = asrBatchLog.scrollHeight;
+			}
+			
+			async function runBatchAsrFromFolder(folderRaw) {
+				const token = localStorage.getItem('yuni_token');
+				if (!token) {
+					showToast('请先登录');
+					setTimeout(() => { window.location.href = '/login'; }, 1500);
+					return;
+				}
+				const folder = (folderRaw || '').trim();
+				if (!folder) {
+					showToast('请填写输入音频目录');
+					return;
+				}
+				if (batchAsrProgress) {
+					batchAsrProgress.classList.remove('hidden');
+					batchAsrProgress.max = 100;
+					batchAsrProgress.value = 0;
+				}
+				if (batchAsrHint) {
+					batchAsrHint.classList.remove('hidden');
+					batchAsrHint.textContent = '流式识别中…';
+				}
+				if (asrBatchLog) asrBatchLog.value = '';
+				appendAsrLog('[开始] POST /api/asr_batch_folder_stream (SSE)');
+				
+				try {
+					const response = await fetch('/api/asr_batch_folder_stream', {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json',
+							'Authorization': 'Bearer ' + token,
+							'Accept': 'text/event-stream'
+						},
+						body: JSON.stringify({
+							folder_path: folder,
+							model_name: document.getElementById('modelSelect')?.value || 'large',
+							language: document.getElementById('langSelect')?.value || 'auto',
+							character_name: (batchCharacterName && batchCharacterName.value.trim()) ? batchCharacterName.value.trim() : null,
+							recursive: true
+						})
+					});
+					if (!response.ok) {
+						if (response.status === 401) {
+							showToast('请先登录');
+							setTimeout(() => { window.location.href = '/login'; }, 1500);
+							return;
+						}
+						const errBody = await response.json().catch(() => ({}));
+						throw new Error(errBody.detail || errBody.error || ('HTTP ' + response.status));
+					}
+					const reader = response.body && response.body.getReader ? response.body.getReader() : null;
+					if (!reader) throw new Error('浏览器不支持流式读取响应');
+					const dec = new TextDecoder();
+					let buf = '';
+					let donePayload = null;
+					while (true) {
+						const { done, value } = await reader.read();
+						if (done) break;
+						buf += dec.decode(value, { stream: true });
+						const parts = buf.split('\n\n');
+						buf = parts.pop() || '';
+						for (const block of parts) {
+							const ln = block.trim();
+							if (!ln.startsWith('data:')) continue;
+							let ev;
+							try {
+								ev = JSON.parse(ln.slice(5).trim());
+							} catch (err) { continue; }
+							if (ev.type === 'progress') {
+								const tot = parseInt(ev.total, 10) || 0;
+								const cur = parseInt(ev.current, 10) || 0;
+								if (tot > 0 && batchAsrProgress) {
+									const pct = Math.min(100, Math.round((cur / tot) * 100));
+									batchAsrProgress.value = ev.phase === 'write' ? 100 : Math.max(batchAsrProgress.value, pct);
+								}
+								if (ev.message) appendAsrLog('[' + (ev.phase || '-') + '] ' + ev.message);
+							} else if (ev.type === 'log') {
+								appendAsrLog((ev.level || 'info') + ': ' + (ev.message || ''));
+							} else if (ev.type === 'error') {
+								throw new Error(ev.message || '未知错误');
+							} else if (ev.type === 'done') {
+								donePayload = ev;
+							}
+						}
+					}
+					if (!donePayload || !donePayload.ok) {
+						throw new Error((donePayload && donePayload.error) || '未收到完成事件');
+					}
+					const msg = '已生成 GPT-SoVITS 标准 .list（路径|角色名|语言|文本）\n\n输出文件:\n' + (donePayload.output_file || '') +
+						'\n\n角色名: ' + (donePayload.character_name || '') +
+						'\n后端: ' + (donePayload.backend || '') + '\n行数: ' + (donePayload.line_count || 0) +
+						'\n\n预览:\n' + (donePayload.preview || '');
+					if (resultText) resultText.value = msg;
+					if (batchAsrProgress) batchAsrProgress.value = 100;
+					showToast('批量 .list 已生成');
+					appendAsrLog('[完成] 写入 ' + (donePayload.output_file || ''));
+				} catch (e) {
+					console.error('批量 ASR 失败:', e);
+					appendAsrLog('[错误] ' + e.message);
+					if (resultText) resultText.value = '批量识别失败: ' + e.message;
+					showToast('批量识别失败');
+				} finally {
+					if (batchAsrHint) batchAsrHint.classList.add('hidden');
+					if (batchAsrProgress) batchAsrProgress.classList.add('hidden');
+				}
+			}
+			
+			// 开始识别：若填写了训练文件夹则批量生成 .list，否则转写当前录音/上传的音频
+			if (convertBtn) {
+				convertBtn.addEventListener('click', () => {
+					const folder = batchFolderPath?.value?.trim();
+					if (folder) {
+						runBatchAsrFromFolder(folder);
+						return;
+					}
+					if (recordedBlob) {
+						showLoading('正在识别...');
+						transcribeAudio(recordedBlob);
+					} else {
+						showToast('请先录音/上传音频，或填写训练音频文件夹路径');
+					}
+				});
+			}
+			
+			// Upload
+			if (uploadInput) {
+				uploadInput.addEventListener('change', async (e) => {
+					if (e.target.files.length > 0) {
+						const file = e.target.files[0];
+						showLoading('转换音频格式...');
+						
+						try {
+							// Use backend API to convert to WAV
+							const formData = new FormData();
+							formData.append('audio', file);
+							
+							const response = await fetch('/api/convert-to-wav', {
+								method: 'POST',
+								body: formData
+							});
+							
+							if (response.ok) {
+								const data = await response.json();
+								const binary = atob(data.audio);
+								const len = binary.length;
+								const bytes = new Uint8Array(len);
+								for (let i = 0; i < len; i++) bytes[i] = binary.charCodeAt(i);
+								recordedBlob = new Blob([bytes.buffer], { type: 'audio/wav' });
+							} else {
+								throw new Error('转换失败');
+							}
+						} catch (err) {
+							console.error('音频转换失败:', err);
+							recordedBlob = file; // Fallback to original
+						}
+						
+						recordedUrl = URL.createObjectURL(recordedBlob);
+						recordedAudio = new Audio(recordedUrl);
+						
+						if (downloadAudioBtn) downloadAudioBtn.disabled = false;
+						if (playRecordBtn) playRecordBtn.style.display = 'inline-flex';
+						if (convertBtn) convertBtn.style.display = 'inline-flex';
+						
+						if (resultText) {
+							resultText.value = '已选择音频 "' + file.name + '"，点击「开始识别」进行转写';
+							resultText.classList.add('bg-blue-50');
+						}
+						showToast('已选择音频，点击转换');
+						hideLoading();
+					}
+				});
+			}
+			
+			// Download recorded audio
+			if (downloadAudioBtn) {
+				downloadAudioBtn.addEventListener('click', () => {
+					if (recordedBlob) {
+						const url = URL.createObjectURL(recordedBlob);
+						const a = document.createElement('a');
+						a.href = url;
+						a.download = 'recording-' + Date.now() + '.wav';
+						a.click();
+						URL.revokeObjectURL(url);
+						showToast('下载开始');
+					}
+				});
+			}
+			
+			// Transcribe
+			async function transcribeAudio(blob) {
+				const formData = new FormData();
+				const ext = blob.type.includes('webm') ? 'webm' : 'wav';
+				formData.append('file', blob, 'audio.' + ext);
+				formData.append('model_name', document.getElementById('modelSelect')?.value || 'large');
+				formData.append('language', document.getElementById('langSelect')?.value || 'auto');
+				
+				const token = localStorage.getItem('yuni_token');
+				const headers = token ? { 'Authorization': 'Bearer ' + token } : {};
+				
+				try {
+					const response = await fetch('/api/transcribe_json', {
+						method: 'POST', headers, body: formData
+					});
+					
+					if (!response.ok) {
+						if (response.status === 401) { showToast('请先登录'); setTimeout(() => window.location.href = '/login', 1500); return; }
+						throw new Error('HTTP ' + response.status);
+					}
+					
+					const data = await response.json();
+					if (resultText) resultText.value = data.text || '未能识别到文字';
+					if (ttsInput && resultText) ttsInput.value = resultText.value;
+					if (resultText) resultText.classList.remove('bg-blue-50');
+					if (convertBtn) convertBtn.style.display = 'none';
+					
+					const detectedLang = document.getElementById('detectedLang');
+					if (detectedLang && data.language) {
+						detectedLang.textContent = '检测语言: ' + getLangName(data.language);
+						detectedLang.classList.remove('hidden');
+					}
+					
+					showToast('识别完成');
+					loadHistory();
+				} catch (e) {
+					console.error('识别失败:', e);
+					if (resultText) resultText.value = '识别失败: ' + e.message;
+					showToast('识别失败');
+				} finally {
+					hideLoading();
+				}
+			}
+			
+			function getLangName(code) {
+				const names = { 'zh': '中文', 'zh-Hant': '繁体中文', 'en': '英语', 'ja': '日语', 'ko': '韩语' };
+				return names[code] || code;
+			}
+			
+			// Copy & Clear
+			const copyTextBtn = document.getElementById('copyTextBtn');
+			if (copyTextBtn) {
+				copyTextBtn.addEventListener('click', async () => {
+					try { 
+						if (resultText) await navigator.clipboard.writeText(resultText.value); 
+						showToast('已复制'); 
+					}
+					catch (e) { showToast('复制失败'); }
+				});
+			}
+			
+			const clearTextBtn = document.getElementById('clearTextBtn');
+			if (clearTextBtn) {
+				clearTextBtn.addEventListener('click', () => {
+					if (resultText) resultText.value = '';
+					if (ttsInput) ttsInput.value = '';
+					if (convertBtn) convertBtn.style.display = 'inline-flex';
+					showToast('已清空');
+				});
+			}
+			
+			// Speed & Volume
+			if (speedInput && speedValue) {
+				speedInput.addEventListener('input', (e) => { speedValue.textContent = e.target.value + 'x'; });
+			}
+			if (volumeInput && volumeValue) {
+				volumeInput.addEventListener('input', (e) => { volumeValue.textContent = Math.round(e.target.value * 100) + '%'; });
+			}
+			
+			// TTS
+			if (synthesizeBtn) {
+				synthesizeBtn.addEventListener('click', async () => {
+					const text = ttsInput?.value.trim();
+					if (!text) { showToast('请输入文字'); return; }
+					
+					const speaker = voiceSelect?.value || 'default';
+					const speed = parseFloat(speedInput?.value || 1);
+					
+					const emotionMode = document.getElementById('emotionModeSelect')?.value || 'same';
+					const emotionVector = {};
+					if (emotionMode === 'vector') {
+						emotionVector.joy = parseFloat(document.getElementById('emotionJoy')?.value || 0);
+						emotionVector.anger = parseFloat(document.getElementById('emotionAnger')?.value || 0);
+						emotionVector.sadness = parseFloat(document.getElementById('emotionSadness')?.value || 0);
+						emotionVector.fear = parseFloat(document.getElementById('emotionFear')?.value || 0);
+						emotionVector.disgust = parseFloat(document.getElementById('emotionDisgust')?.value || 0);
+						emotionVector.depression = parseFloat(document.getElementById('emotionDepression')?.value || 0);
+						emotionVector.surprise = parseFloat(document.getElementById('emotionSurprise')?.value || 0);
+						emotionVector.calm = parseFloat(document.getElementById('emotionCalm')?.value || 0);
+					}
+					
+					showLoading('正在合成...');
+					synthesizeBtn.disabled = true;
+					synthesizeBtn.textContent = '合成中...';
+					
+					try {
+						const token = localStorage.getItem('yuni_token');
+						if (!token) {
+							showToast('请先登录');
+							hideLoading();
+							synthesizeBtn.disabled = false;
+							synthesizeBtn.textContent = '生成语音';
+							return;
+						}
+						
+						console.log('[>] TTS请求: speaker=' + speaker + ', emotion_mode=' + emotionMode);
+						
+						const requestBody = { text, speaker, speed, emotion_mode: emotionMode };
+						if (emotionMode === 'vector') {
+							requestBody.emotion_vector = emotionVector;
+						}
+						
+						const response = await fetch('/api/tts', {
+							method: 'POST',
+							headers: { 
+								'Content-Type': 'application/json',
+								'Authorization': 'Bearer ' + token
+							},
+							body: JSON.stringify(requestBody)
+						});
+						
+						if (!response.ok) {
+							if (response.status === 401) { showToast('请先登录'); setTimeout(() => window.location.href = '/login', 1500); return; }
+							const err = await response.json();
+							console.error('[!] TTS错误:', err);
+							throw new Error(err.detail || 'HTTP ' + response.status);
+						}
+						
+						const data = await response.json();
+						console.log('[OK] TTS响应:', data);
+						
+						if (data.audio_base64) {
+							const binary = atob(data.audio_base64);
+							const len = binary.length;
+							const bytes = new Uint8Array(len);
+							for (let i = 0; i < len; i++) bytes[i] = binary.charCodeAt(i);
+							
+							ttsAudioBlob = new Blob([bytes.buffer], { type: 'audio/wav' });
+							const url = URL.createObjectURL(ttsAudioBlob);
+							if (ttsAudio) URL.revokeObjectURL(ttsAudio.src);
+							ttsAudio = new Audio(url);
+							
+							ttsAudio.addEventListener('ended', () => {
+								isTTSPlaying = false;
+								if (playTtsBtn) playTtsBtn.innerHTML = '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg> 播放';
+							});
+							
+							const ttsResult = document.getElementById('ttsResult');
+							if (ttsResult) ttsResult.classList.remove('hidden');
+							const ttsDuration = document.getElementById('ttsDuration');
+							if (ttsDuration) ttsDuration.textContent = formatTime(data.duration || 0);
+							if (playTtsBtn) playTtsBtn.disabled = false;
+							if (downloadTtsBtn) downloadTtsBtn.disabled = false;
+							showToast('合成完成');
+						} else { showToast('合成失败'); }
+					} catch (e) {
+						console.error('TTS失败:', e);
+						showToast('合成失败');
+					} finally {
+						hideLoading();
+						if (synthesizeBtn) {
+							synthesizeBtn.disabled = false;
+							synthesizeBtn.textContent = '生成语音';
+						}
+					}
+				});
+			}
+			
+			if (playTtsBtn) {
+				playTtsBtn.addEventListener('click', () => {
+					if (!ttsAudio) return;
+					if (isTTSPlaying) { ttsAudio.pause(); isTTSPlaying = false; playTtsBtn.innerHTML = '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg> 播放'; }
+					else { ttsAudio.play(); isTTSPlaying = true; playTtsBtn.innerHTML = '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg> 暂停'; }
+				});
+			}
+			
+			if (downloadTtsBtn) {
+				downloadTtsBtn.addEventListener('click', () => {
+					if (ttsAudioBlob) {
+						const url = URL.createObjectURL(ttsAudioBlob);
+						const a = document.createElement('a');
+						a.href = url; a.download = 'tts-' + Date.now() + '.wav'; a.click();
+						URL.revokeObjectURL(url);
+						showToast('下载开始');
+					}
+				});
+			}
+			
+			// Emotion Mode
+			const emotionModeSelect = document.getElementById('emotionModeSelect');
+			const emotionRefSection = document.getElementById('emotionRefSection');
+			const emotionVectorSection = document.getElementById('emotionVectorSection');
+			if (emotionModeSelect) {
+				emotionModeSelect.addEventListener('change', () => {
+					const mode = emotionModeSelect.value;
+					if (mode === 'reference') {
+						emotionRefSection?.classList.remove('hidden');
+						emotionVectorSection?.classList.add('hidden');
+					} else if (mode === 'vector') {
+						emotionRefSection?.classList.add('hidden');
+						emotionVectorSection?.classList.remove('hidden');
+					} else {
+						emotionRefSection?.classList.add('hidden');
+						emotionVectorSection?.classList.add('hidden');
+					}
+				});
+			}
+			
+			// Emotion Sliders
+			const emotionSliders = ['Joy', 'Anger', 'Sadness', 'Fear', 'Disgust', 'Depression', 'Surprise', 'Calm'];
+			emotionSliders.forEach(emotion => {
+				const slider = document.getElementById('emotion' + emotion);
+				const valueSpan = document.getElementById('emotion' + emotion + 'Val');
+				if (slider && valueSpan) {
+					slider.addEventListener('input', () => {
+						valueSpan.textContent = slider.value;
+					});
+				}
+			});
+			
+			// Emotion Reference Audio
+			let emotionRefAudioFile = null;
+			const emotionRefBtn = document.getElementById('emotionRefBtn');
+			const emotionRefInput = document.getElementById('emotionRefInput');
+			const emotionRefName = document.getElementById('emotionRefName');
+			if (emotionRefBtn && emotionRefInput) {
+				emotionRefBtn.addEventListener('click', () => emotionRefInput.click());
+				emotionRefInput.addEventListener('change', (e) => {
+					if (e.target.files.length > 0) {
+						emotionRefAudioFile = e.target.files[0];
+						emotionRefName.textContent = emotionRefAudioFile.name;
+					}
+				});
+			}
+			
+			function formatTime(seconds) {
+				const m = Math.floor(seconds / 60);
+				const s = Math.floor(seconds % 60);
+				return m + ':' + String(s).padStart(2, '0');
+			}
+			
+			// Voice Library
+			if (addVoiceBtn) {
+				addVoiceBtn.addEventListener('click', () => {
+					if (voiceModal) {
+						voiceModal.classList.remove('hidden');
+						voiceModal.classList.add('flex');
+					}
+				});
+			}
+			
+			if (closeVoiceModal) {
+				closeVoiceModal.addEventListener('click', () => {
+					if (voiceModal) {
+						voiceModal.classList.add('hidden');
+						voiceModal.classList.remove('flex');
+					}
+					if (voiceName) voiceName.value = '';
+					if (voiceAudioInput) voiceAudioInput.value = '';
+					if (voiceAudioName) voiceAudioName.textContent = '';
+					if (saveVoiceBtn) saveVoiceBtn.disabled = true;
+				});
+			}
+			
+			if (voiceAudioInput) {
+				voiceAudioInput.addEventListener('change', () => {
+					if (voiceAudioInput.files.length > 0) {
+						if (voiceAudioName) voiceAudioName.textContent = voiceAudioInput.files[0].name;
+						if (voiceName?.value.trim() && saveVoiceBtn) saveVoiceBtn.disabled = false;
+					}
+				});
+			}
+			
+			if (voiceName) {
+				voiceName.addEventListener('input', () => {
+					if (saveVoiceBtn) saveVoiceBtn.disabled = !(voiceName.value.trim() && voiceAudioInput?.files.length > 0);
+				});
+			}
+			
+			if (saveVoiceBtn) {
+				saveVoiceBtn.addEventListener('click', async () => {
+					const name = voiceName?.value.trim();
+					if (!name || !voiceAudioInput?.files.length > 0) {
+						showToast('请选择音频文件');
+						return;
+					}
+					
+					showLoading('转换音频格式并保存...');
+					
+					const voice_id = 'voice_' + Date.now();
+					const originalFile = voiceAudioInput.files[0];
+					
+					try {
+						// Use backend API to convert to WAV
+						const convertFormData = new FormData();
+						convertFormData.append('audio', originalFile);
+						
+						const convertResponse = await fetch('/api/convert-to-wav', {
+							method: 'POST',
+							body: convertFormData
+						});
+						
+						let wavBlob;
+						if (convertResponse.ok) {
+							const convertData = await convertResponse.json();
+							const binary = atob(convertData.audio);
+							const len = binary.length;
+							const bytes = new Uint8Array(len);
+							for (let i = 0; i < len; i++) bytes[i] = binary.charCodeAt(i);
+							wavBlob = new Blob([bytes.buffer], { type: 'audio/wav' });
+						} else {
+							throw new Error('转换失败');
+						}
+						
+						const voiceData = {
+							id: voice_id,
+							name: name,
+							audioName: originalFile.name
+						};
+						
+						const formData = new FormData();
+						formData.append('voice_id', voice_id);
+						formData.append('name', name);
+						formData.append('audio', wavBlob, voice_id + '.wav');
+						
+						const token = localStorage.getItem('yuni_token');
+						if (token) {
+							const response = await fetch('/api/voice/upload', {
+								method: 'POST',
+								headers: { 'Authorization': 'Bearer ' + token },
+								body: formData
+							});
+							const result = await response.json();
+							console.log('上传响应:', result);
+							
+							if (!response.ok || !result.success) {
+								showToast('上传失败: ' + (result.error || '未知错误'));
+								hideLoading();
+								return;
+							}
+							
+							userVoices.push(voiceData);
+							localStorage.setItem('yuni_voices', JSON.stringify(userVoices));
+						} else {
+							userVoices.push(voiceData);
+							localStorage.setItem('yuni_voices', JSON.stringify(userVoices));
+						}
+					} catch (e) {
+						console.error('音色上传失败:', e);
+						showToast('上传失败: ' + e.message);
+						hideLoading();
+						return;
+					}
+					
+					updateVoiceList();
+					if (voiceModal) {
+						voiceModal.classList.add('hidden');
+						voiceModal.classList.remove('flex');
+					}
+					if (voiceName) voiceName.value = '';
+					if (voiceAudioInput) voiceAudioInput.value = '';
+					if (voiceAudioName) voiceAudioName.textContent = '';
+					if (saveVoiceBtn) saveVoiceBtn.disabled = true;
+					hideLoading();
+					showToast('音色已保存');
+				});
+			}
+			
+			function updateVoiceList() {
+				try { userVoices = JSON.parse(localStorage.getItem('yuni_voices') || '[]'); }
+				catch (e) { userVoices = []; }
+				
+				if (voiceList) {
+					if (userVoices.length === 0) {
+						voiceList.innerHTML = '<div class="text-center py-6 text-gray-400 text-xs">暂无音色</div>';
+						if (voiceSelect) voiceSelect.innerHTML = '<option value="default">默认音色</option>';
+						return;
+					}
+					
+					voiceList.innerHTML = userVoices.map(v => '<div class="flex items-center justify-between p-2 rounded hover:bg-gray-100"><span class="text-sm text-gray-700 truncate flex-1">' + v.name + '</span><button class="text-xs text-red-500 hover:text-red-700 cursor-pointer" onclick="deleteVoice(\'' + v.id + '\')">删除</button></div>').join('');
+					
+					if (voiceSelect) {
+						voiceSelect.innerHTML = '<option value="default">默认音色</option>' + userVoices.map(v => '<option value="' + v.id + '">' + v.name + '</option>').join('');
+					}
+				}
+			}
+			
+			window.deleteVoice = async function(id) {
+				if (!confirm('确定删除这个音色？')) return;
+				
+				try {
+					const token = localStorage.getItem('yuni_token');
+					if (token) {
+						await fetch('/api/voice/' + id, {
+							method: 'DELETE',
+							headers: { 'Authorization': 'Bearer ' + token }
+						});
+					}
+				} catch (e) { console.log('删除音色失败:', e); }
+				
+				userVoices = userVoices.filter(v => v.id !== id);
+				localStorage.setItem('yuni_voices', JSON.stringify(userVoices));
+				updateVoiceList();
+				showToast('音色已删除');
+			};
+			
+			// History
+			const historyToggleBtn = document.getElementById('historyToggleBtn');
+			const historyPanel = document.getElementById('historyPanel');
+			const historyOverlay = document.getElementById('historyOverlay');
+			const closeHistoryPanel = document.getElementById('closeHistoryPanel');
+			const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+			
+			if (historyToggleBtn) {
+				historyToggleBtn.addEventListener('click', () => {
+					if (historyPanel) historyPanel.classList.add('open');
+					if (historyOverlay) historyOverlay.classList.add('show');
+				});
+			}
+			
+			if (closeHistoryPanel) {
+				closeHistoryPanel.addEventListener('click', () => {
+					if (historyPanel) historyPanel.classList.remove('open');
+					if (historyOverlay) historyOverlay.classList.remove('show');
+				});
+			}
+			
+			if (historyOverlay) {
+				historyOverlay.addEventListener('click', () => {
+					if (historyPanel) historyPanel.classList.remove('open');
+					if (historyOverlay) historyOverlay.classList.remove('show');
+				});
+			}
+			
+			if (clearHistoryBtn) {
+				clearHistoryBtn.addEventListener('click', async () => {
+					if (!confirm('确定清空历史记录？')) return;
+					const token = localStorage.getItem('yuni_token');
+					if (token) {
+						await fetch('/api/history/clear', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } });
+					}
+					loadHistory();
+					showToast('已清空');
+				});
+			}
+			
+			async function loadHistory() {
+				const token = localStorage.getItem('yuni_token');
+				if (!historyList) { if (historyList) historyList.innerHTML = '<div class="text-center py-8 text-gray-400 text-xs">请先登录</div>'; return; }
+				
+				try {
+					const response = await fetch('/api/history', { headers: { 'Authorization': 'Bearer ' + (token || '') } });
+					if (!response.ok) throw new Error();
+					const data = await response.json();
+					const items = data.items || [];
+					
+					if (!historyList) return;
+					if (items.length === 0) {
+						historyList.innerHTML = '<div class="text-center py-8 text-gray-400 text-xs">暂无历史</div>';
+						return;
+					}
+					
+					historyList.innerHTML = items.map(item => {
+						const time = formatTimestamp(item.ts);
+						const text = (item.text || '').substring(0, 30);
+						const historyId = item.id || item.history_id || '';
+						return `<div class="p-3 rounded-lg hover:bg-gray-100 cursor-pointer mb-2 group" onclick="loadHistoryItem('${(item.text || '').replace(/'/g, "\\'")}')">
+							<div class="flex items-start justify-between mb-1">
+								<div class="text-xs text-gray-800 truncate flex-1">${text || '无文字'}</div>
+								<button class="delete-history-btn opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-700 ml-2 cursor-pointer" 
+									data-id="${historyId}" title="删除">
+									<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+									</svg>
+								</button>
+							</div>
+							<div class="flex items-center justify-between">
+								<span class="text-xs text-gray-400">${time}</span>
+								<span class="text-xs text-gray-400">${item.model || ''}</span>
+							</div>
+						</div>`;
+					}).join('');
+
+					// 绑定删除按钮事件
+					document.querySelectorAll('.delete-history-btn').forEach(btn => {
+						btn.addEventListener('click', async (e) => {
+							e.stopPropagation();
+							const id = btn.dataset.id;
+							if (!confirm('确定删除这条历史记录？')) return;
+							const token = localStorage.getItem('yuni_token');
+							if (token) {
+								await fetch('/api/history/' + id, { 
+									method: 'DELETE',
+									headers: { 'Authorization': 'Bearer ' + token }
+								});
+							}
+							loadHistory();
+							showToast('已删除');
+						});
+					});
+				} catch (e) {
+					if (historyList) historyList.innerHTML = '<div class="text-center py-8 text-gray-400 text-xs">加载失败</div>';
+				}
+			}
+			
+			window.loadHistoryItem = function(text) {
+				if (resultText) resultText.value = text;
+				if (ttsInput) ttsInput.value = text;
+				if (historyPanel) historyPanel.classList.remove('open');
+				if (historyOverlay) historyOverlay.classList.remove('show');
+			};
+			
+			function formatTimestamp(ts) {
+				const d = new Date(ts * 1000);
+				const now = new Date();
+				if (d.toDateString() === now.toDateString()) {
+					return '今天 ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+				}
+				return (d.getMonth()+1) + '/' + d.getDate() + ' ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+			}
+			
+			// Sync text
+			if (resultText && ttsInput) {
+				resultText.addEventListener('input', () => { ttsInput.value = resultText.value; });
+			}
+			
+			// Translation
+			async function translateText(text, targetLang) {
+				if (!text?.trim()) return '';
+				
+				const token = localStorage.getItem('yuni_token');
+				const apiKey = localStorage.getItem('yuni_deepl_api_key');
+				const headers = {
+					'Content-Type': 'application/json',
+					...(token && { 'Authorization': 'Bearer ' + token }),
+					...(apiKey && { 'X-Deepl-Api-Key': apiKey })
+				};
+				
+				try {
+					const response = await fetch('/api/translate', {
+						method: 'POST', headers,
+						body: JSON.stringify({ text, target_lang: targetLang })
+					});
+					
+					if (response.ok) {
+						const data = await response.json();
+						if (data.error) {
+							if (data.error.includes('API key') || data.error.includes('configured')) {
+								document.getElementById('apiKeyConfig')?.classList.remove('hidden');
+							}
+							return '';
+						}
+						return data.translated || '';
+					}
+				} catch (e) { console.error('翻译失败:', e); }
+				return '';
+			}
+			
+			// API Key Config
+			const deeplApiKeyInput = document.getElementById('deeplApiKey');
+			if (deeplApiKeyInput) {
+				deeplApiKeyInput.value = localStorage.getItem('yuni_deepl_api_key') || '';
+			}
+			
+			const saveApiKeyBtn = document.getElementById('saveApiKeyBtn');
+			if (saveApiKeyBtn && deeplApiKeyInput) {
+				saveApiKeyBtn.addEventListener('click', () => {
+					const apiKey = deeplApiKeyInput.value.trim();
+					if (apiKey) {
+						localStorage.setItem('yuni_deepl_api_key', apiKey);
+						showToast('API Key 已保存');
+					} else {
+						localStorage.removeItem('yuni_deepl_api_key');
+						showToast('API Key 已清除');
+					}
+				});
+			}
+			
+			// Translate button
+			const translateBtn = document.getElementById('translateBtn');
+			const singleResult = document.getElementById('singleResult');
+			const splitResult = document.getElementById('splitResult');
+			const originalText = document.getElementById('originalText');
+			const translatedText = document.getElementById('translatedText');
+			const targetLangSelect = document.getElementById('targetLangSelect');
+			
+			if (translateBtn) {
+				translateBtn.addEventListener('click', async () => {
+					const text = resultText?.value.trim();
+					if (!text) { showToast('请先进行语音识别'); return; }
+					
+					if (splitResult && !splitResult.classList.contains('hidden')) {
+						splitResult.classList.add('hidden');
+						if (singleResult) singleResult.classList.remove('hidden');
+						return;
+					}
+					
+					if (singleResult) singleResult.classList.add('hidden');
+					if (splitResult) splitResult.classList.remove('hidden');
+					if (originalText) originalText.textContent = text;
+					if (translatedText) translatedText.textContent = '翻译中...';
+					
+					const translated = await translateText(text, targetLangSelect?.value || 'zh');
+					if (translatedText) translatedText.textContent = translated || '翻译失败，请配置 DeepL API Key';
+					if (!translated) document.getElementById('apiKeyConfig')?.classList.remove('hidden');
+				});
+			}
+			
+			// Copy buttons
+			const copyOriginalBtn = document.getElementById('copyOriginalBtn');
+			const copyTranslatedBtn = document.getElementById('copyTranslatedBtn');
+			
+			if (copyOriginalBtn) {
+				copyOriginalBtn.addEventListener('click', async () => {
+					try { 
+						if (originalText) await navigator.clipboard.writeText(originalText.textContent); 
+						showToast('已复制原文'); 
+					}
+					catch (e) { showToast('复制失败'); }
+				});
+			}
+			
+			if (copyTranslatedBtn) {
+				copyTranslatedBtn.addEventListener('click', async () => {
+					try { 
+						if (translatedText) await navigator.clipboard.writeText(translatedText.textContent); 
+						showToast('已复制翻译'); 
+					}
+					catch (e) { showToast('复制失败'); }
+				});
+			}
+			
+			// Initialize
+			updateVoiceList();
+			loadHistory();
+			
+			// Collapsible panels
+			document.querySelectorAll('.collapsible-header').forEach(header => {
+				header.addEventListener('click', (e) => {
+					if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+					const section = header.closest('.sidebar-section');
+					const content = section?.querySelector('.collapsible-content');
+					const chevron = header.querySelector('.chevron');
+					
+					const isCollapsing = !section?.classList.contains('collapsed');
+					
+					if (isCollapsing) {
+						section?.classList.add('collapsed');
+						content?.classList.add('collapsed');
+						chevron?.classList.add('collapsed');
+					} else {
+						section?.classList.remove('collapsed');
+						content?.classList.remove('collapsed');
+						chevron?.classList.remove('collapsed');
+					}
+				});
+			});
+			
+			// Resizable TTS panel
+			function initResizable(handleId, sectionId, minHeight = 60, maxHeight = 500) {
+				const handle = document.getElementById(handleId);
+				const section = document.getElementById(sectionId);
+				if (!handle || !section) return;
+				
+				let startY, startHeight;
+				
+				const onMouseDown = (e) => {
+					e.preventDefault();
+					e.stopPropagation();
+					startY = e.clientY;
+					startHeight = section.offsetHeight;
+					
+					section.classList.add('resizing');
+					handle.classList.add('active');
+					
+					document.addEventListener('mousemove', onMouseMove, { passive: false });
+					document.addEventListener('mouseup', onMouseUp);
+				};
+				
+				const onMouseMove = (e) => {
+					e.preventDefault();
+					e.stopPropagation();
+					const deltaY = e.clientY - startY;
+					let newHeight = Math.max(minHeight, startHeight + deltaY);
+					if (maxHeight > 0) newHeight = Math.min(maxHeight, newHeight);
+					
+					section.style.flex = '0 0 ' + newHeight + 'px';
+				};
+				
+				const onMouseUp = (e) => {
+					e.stopPropagation();
+					section.classList.remove('resizing');
+					handle.classList.remove('active');
+					document.removeEventListener('mousemove', onMouseMove);
+					document.removeEventListener('mouseup', onMouseUp);
+				};
+				
+				handle.addEventListener('mousedown', onMouseDown);
+				handle.style.cursor = 'ns-resize';
+			}
+			
+			initResizable('resizeHandleTts', 'ttsSection', 200, 500);
+			
+			console.log('All event listeners initialized');
+		});
+	</script>
+</body>
+</html>
